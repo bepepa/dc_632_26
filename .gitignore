@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# exclude folder named "my_notebooks" and all its contents
+my_notebooks/
+
 # Distribution / packaging
 .Python
 build/
