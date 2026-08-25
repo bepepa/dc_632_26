@@ -67,8 +67,10 @@ When the virtual environment is activated, you should see the name of the virtua
 To install the required dependencies, run the following command in your terminal:
 
 ```bash
-pip install .
+pip install -e .
 ```
+
+The `-e` flag stands for "editable" mode, which means that any changes you make to the source code in the repository will be immediately reflected in the installed package without needing to reinstall it.
 
 This will take a moment to install all the required packages listed in the `pyproject.toml` file. Once the installation is complete, you should see a message indicating that the installation was successful.
 
