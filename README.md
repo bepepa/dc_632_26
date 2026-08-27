@@ -55,10 +55,12 @@ source .venv/bin/activate
 On Windows, use the following command:
 
 ```bash
-.venv\Scripts\activate.bat
-``` 
+.venv\Scripts\activate
+```
 
-**Note:** You will need to activate the virtual environment every time you start a new terminal session and want to work on this project. You can deactivate the virtual environment by running the command `deactivate` (`deactivate.bat` on Windows).
+This should work if you're using command prompt (CMD) or power shell. When using CMD, the file `.venv\Scripts\activate.bat` will be executed; with power shell the file `.venv\Scripts\activate.ps1` is executed.
+
+**Note:** You will need to activate the virtual environment every time you start a new terminal session and want to work on this project. You can deactivate the virtual environment by running the command `deactivate` (`deactivate` on Windows).
 
 When the virtual environment is activated, you should see the name of the virtual environment (in this case, `.venv`) in your terminal prompt. This indicates that you are now working within the virtual environment.
 
@@ -91,6 +93,10 @@ jupyter lab
 ```
 
 This will open Jupyter Lab in your default web browser. In Jupyter Lab, navigate to the `notebooks` folder and open the notebook named `00_test_setup.ipynb`. This notebook contains tests to ensure that the required dependencies are installed and working correctly, as well as a simple audio experiment to verify that the audio input and output devices are working correctly.
+
+### Alternative: VS Code
+
+[Visual Studio Code](https://code.visualstudio.com) (VS Code) is a very powerful, open-source IDE that provides enhanced support (like syntax highlighting or contextual help) and fully supports Python and Jupyter notebooks. If you decide to install and use VS Code, you must install plug-ins for Python and Jupyter to get the full benefits of the IDE.
 
 ## Repository structure
 
