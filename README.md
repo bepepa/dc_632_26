@@ -31,7 +31,7 @@ Virtual environments are a way to create isolated Python environments for differ
 ```bash
 python3 --version
 ```
-Any version of Python 3.8 or later should work for this course.
+Any version of Python 3.11 or later should work for this course.
 
 Navigate to the cloned repository:
 
@@ -55,10 +55,10 @@ source .venv/bin/activate
 On Windows, use the following command:
 
 ```bash
-.venv\Scripts\activate
+.venv\Scripts\activate.bat
 ``` 
 
-**Note:** You will need to activate the virtual environment every time you start a new terminal session and want to work on this project. You can deactivate the virtual environment by running the command `deactivate`.
+**Note:** You will need to activate the virtual environment every time you start a new terminal session and want to work on this project. You can deactivate the virtual environment by running the command `deactivate` (`deactivate.bat` on Windows).
 
 When the virtual environment is activated, you should see the name of the virtual environment (in this case, `.venv`) in your terminal prompt. This indicates that you are now working within the virtual environment.
 
