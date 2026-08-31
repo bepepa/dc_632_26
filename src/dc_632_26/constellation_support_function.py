@@ -21,26 +21,26 @@ def minimum_distance_sqr(mod_map):
 def Energy_per_symbol(symbol_stream_vals, mod_map):
     num_keys = len(mod_map.keys())
     total_energy = np.linalg.norm(symbol_stream_vals)**2
-    print(total_energy)
+
     total_average_energy = total_energy / len(symbol_stream_vals)
-    print(bits_per_symbol(mod_map))
-    return total_average_energy/bits_per_symbol(mod_map)
+
+    return total_average_energy
 
 def bits_per_symbol(mod_map):
     return np.log2(len(mod_map))
 
 def Energy_per_bit(symbol_stream_vals, mod_map):
     M = bits_per_symbol(mod_map) # bits per symbol
-    print(M)
+
     Es = Energy_per_symbol(symbol_stream_vals, mod_map)
-    print(Es)
+
     Eb = Es / M
-    print(Eb)
+
     return Eb
 
 def calculate_efficiency(Eb, mod_map):
     d_min_sqr = minimum_distance_sqr(mod_map)
-    print(d_min_sqr)
+
     return d_min_sqr / Eb
 
 # Test Mod-Map
