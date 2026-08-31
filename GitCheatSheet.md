@@ -31,7 +31,7 @@ We will be using a workflow referred to as the ["feature branch workflow"](https
 A typical Git workflow involves the following steps:
 
 1. **Synchronize with the main branch of the remote repository**: `git checkout main` and `git pull origin main`; this ensures that you have the most recent changes from the main branch.
-2. **Create a new branch**: `git branch <branch>` and `git checkout <branch>`; the name of the branch should reflect the feature or task you are working on.
+2. **Create a new branch**: You can use `git branch <branch>` and `git checkout <branch>`. It may be easier if you create the new branch in the Github GUI on the web, then use `git pull` followed by `git checkout <branch>`. In either case, the name of the branch should reflect the feature or task you are working on.
 3. Repeat the following steps until you are satisfied with your changes; don't forget to include unit tests and documentation as needed.
    
    - **Make changes**: Edit files in your working directory until you complete a meaningful subtask.
