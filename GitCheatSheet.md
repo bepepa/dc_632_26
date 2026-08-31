@@ -1,4 +1,4 @@
-# Git Cheat Sheet
+# Git Cheat Sheet for ECE 632 (Digital Communications)
 
 ## Basic Commands
 
