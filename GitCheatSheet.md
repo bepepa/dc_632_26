@@ -27,18 +27,20 @@ Most branches should be very short-lived and focused on **one** specific task or
 
 ## Workflow
 
-We will be using a workflow referred to as the [https://gist.github.com/blackfalcon/8428401]( "feature branch workflow").
+We will be using a workflow referred to as the ["feature branch workflow"](https://gist.github.com/blackfalcon/8428401).
 A typical Git workflow involves the following steps:
 
 1. **Synchronize with the main branch of the remote repository**: `git checkout main` and `git pull origin main`; this ensures that you have the most recent changes from the main branch.
 2. **Create a new branch**: `git branch <branch>` and `git checkout <branch>`; the name of the branch should reflect the feature or task you are working on.
 3. Repeat the following steps until you are satisfied with your changes; don't forget to include unit tests and documentation as needed.
+   
     a. **Make changes**: Edit files in your working directory until you complete a meaningful subtask.
     b. **Review changes**: `git status` and possibly `git diff`: Review the changes you have made to ensure they are correct and complete before staging them.
     c. **Stage changes**: `git add <file>`: Add the changes you have made to the staging area, preparing them for a commit.
     d. **Commit changes**: `git commit -m "message"`: Record the changes in the local repository with a descriptive message.
     e. **Push changes**: `git push origin <branch>`
     f. **Resolve any conflicts**: It is possible that the changes you are trying to push conflict with changes made by others to your branch. If that happens, try `git pull origin <branch>` to fetch and merge the latest changes from the remote branch, and then resolve any conflicts that arise before pushing again.
-4. **Create a pull request**: Go to the Github repository in your browser and create a pull request for the branch you have been working on. This will initiate a review process where other contributors can provide feedback and approve the changes before they are merged into the main branch.
-5. **Merge changes**: The Github GUI on the web will provide an option to merge the pull request once it has been approved. Click the "Merge" button to integrate the changes into the main branch.
-6. **Delete the branch** (optional): Deleting the now-completed branch is an option in the Github GUI.
+
+5. **Create a pull request**: Go to the Github repository in your browser and create a pull request for the branch you have been working on. This will initiate a review process where other contributors can provide feedback and approve the changes before they are merged into the main branch.
+6. **Merge changes**: The Github GUI on the web will provide an option to merge the pull request once it has been approved. Click the "Merge" button to integrate the changes into the main branch.
+7. **Delete the branch** (optional): Deleting the now-completed branch is an option in the Github GUI.
