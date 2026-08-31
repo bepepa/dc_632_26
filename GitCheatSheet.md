@@ -38,6 +38,13 @@ A typical Git workflow involves the following steps:
    - **Review changes**: `git status` and possibly `git diff`: Review the changes you have made to ensure they are correct and complete before staging them.
    - **Stage changes**: `git add <file>`: Add the changes you have made to the staging area, preparing them for a commit.
    - **Commit changes**: `git commit -m "message"`: Record the changes in the local repository with a descriptive message.
+     + Acknowledge the contributions from your co-authors by including them in the commit message as follows:
+       ```
+       git commit -m "describe your contributions
+       >
+       > Co-authored-by: NAME1 <name1@gmu.edu>
+       > Co-authored-by: NAME2 <name2@gmu.edu>
+       ``` 
    - **Push changes**: `git push origin <branch>`
    - **Resolve any conflicts**: It is possible that the changes you are trying to push conflict with changes made by others to your branch. If that happens, try `git pull origin <branch>` to fetch and merge the latest changes from the remote branch, and then resolve any conflicts that arise before pushing again.
 
