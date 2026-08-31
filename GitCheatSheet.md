@@ -43,7 +43,7 @@ A typical Git workflow involves the following steps:
        git commit -m "describe your contributions
        >
        > Co-authored-by: NAME1 <name1@gmu.edu>
-       > Co-authored-by: NAME2 <name2@gmu.edu>
+       > Co-authored-by: NAME2 <name2@gmu.edu>"
        ``` 
    - **Push changes**: `git push origin <branch>`
    - **Resolve any conflicts**: It is possible that the changes you are trying to push conflict with changes made by others to your branch. If that happens, try `git pull origin <branch>` to fetch and merge the latest changes from the remote branch, and then resolve any conflicts that arise before pushing again.
