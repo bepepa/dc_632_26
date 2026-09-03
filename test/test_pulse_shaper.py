@@ -3,12 +3,12 @@ import numpy as np
 
 def test_pulse_shaper():
     # Setup
-    pulse_func = np.arange # generates a linearly increasing pulse
     oversamp = 5
+    pulse = np.arange(oversamp) # generates a linearly increasing pulse
     symbols = np.array([1+1j, 1-1j, -1+1j, -1-1j])
 
     # Test
-    pulse_shaper = PulseShaper(pulse_func, oversamp)
+    pulse_shaper = PulseShaper(pulse)
     iq = pulse_shaper.generate_waveform(symbols)
 
     # Validate

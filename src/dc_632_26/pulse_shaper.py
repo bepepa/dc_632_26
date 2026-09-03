@@ -2,20 +2,18 @@ import numpy as np
 
 
 class PulseShaper:
-    """Class that generates a sampled waveform given pulse shape, oversampling factor, and input symbols.
+    """Class that generates a sampled waveform given pulse shape and input symbols.
 
         Parameters
         ----------
-        pulse : function 
-            Function that takes as an argument the number of points to return.
-        oversamp : int
-            Number of samples per symbol (sample rate divided by symbol rate)
+        pulse : np.ndarray 
+            Discrete-time pulse. Length is equal to the oversampling factor.
     """ 
-    def __init__(self, pulse, oversamp):
-        self.pulse = pulse(oversamp)
-        self.oversamp = oversamp
+    def __init__(self, pulse: np.ndarray):
+        self.pulse = pulse
+        self.oversamp = len(pulse)
 
-    def generate_waveform(self, symbols:np.ndarray) -> np.ndarray:
+    def generate_waveform(self, symbols: np.ndarray) -> np.ndarray:
         """Generates a waveform from the given symbols.
                 
         Parameters:
@@ -39,6 +37,5 @@ class PulseShaper:
 
         # Convolve with pulse to get waveform
         waveform = np.convolve(spaced_symbols, self.pulse)
-        waveform = waveform[:waveform_len] #clipping, try removing clipping here 
+        waveform = waveform[:waveform_len]
         return waveform
-        
