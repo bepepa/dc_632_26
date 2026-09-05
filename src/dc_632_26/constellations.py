@@ -52,7 +52,7 @@ class Constellation:
         return float(diff.min())
 
     @property
-    def energy_efficiency(self) -> np.float64:
+    def energy_efficiency(self) -> float:
         return self.min_distance ** 2 / self.bit_energy
 
     # -- Notations/Aliases that are meaningful in the context of ECE 632 ---
