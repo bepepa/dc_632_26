@@ -145,7 +145,7 @@ class Constellation:
         return self.bits_per_symbol
 
     @property
-    def dmin(self) -> int:
+    def dmin(self) -> float:
         """_Return the minimum distance between two different constellation points (alias of `min_distance`).
 
         Returns
@@ -156,7 +156,7 @@ class Constellation:
         return self.min_distance
 
     @property
-    def eta(self) -> int:
+    def eta(self) -> float:
         """_Return the energy efficiency of the constellation (alias of `energy_efficiency`).
 
         Returns
