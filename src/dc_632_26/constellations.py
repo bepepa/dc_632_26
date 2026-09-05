@@ -12,16 +12,20 @@ class Constellation:
             mod_table, dtype=np.complex128
         )
 
-    def get_symbol_energy(self) -> float:
+    @property
+    def symbol_energy(self) -> float:
         return float(np.mean(np.abs(self.mod_table) ** 2))
 
-    def get_number_bits_per_symbol(self) -> int:
+    @property
+    def bits_per_symbol(self) -> int:
         return int(np.round(np.log2(len(self.mod_table))))
 
-    def get_bit_energy(self) -> float:
-        return self.get_symbol_energy() / self.get_number_bits_per_symbol()
+    @property
+    def bit_energy(self) -> float:
+        return self.symbol_energy / self.bits_per_symbol
 
-    def get_min_distance(self) -> float:
+    @property
+    def min_distance(self) -> float:
         """
         FIX ME: Summaryline.
 
@@ -47,11 +51,35 @@ class Constellation:
         np.fill_diagonal(diff, np.inf)  # fill out the 0's
         return float(diff.min())
 
-    def get_energy_efficiency(self) -> np.float64:
-        return self.get_min_distance() ** 2 / self.get_bit_energy()
+    @property
+    def energy_efficiency(self) -> np.float64:
+        return self.min_distance ** 2 / self.bit_energy
 
+    # -- Notations/Aliases that are meaningful in the context of ECE 632 ---
+    @property
+    def Es(self) -> float:
+        return self.symbol_energy
+
+    @property
+    def Eb(self) -> float:
+        return self.bit_energy
+
+    @property
+    def bps(self) -> int:
+        return self.bits_per_symbol
+
+    @property
+    def dmin(self) -> int:
+        return self.min_distance
+
+    @property
+    def eta(self) -> int:
+        return self.energy_efficiency
+    
     def __getitem__(self, bit_seq: int | NumpyInt) -> complex:
         return complex(self.mod_table[bit_seq])
+
+    
 
 
 bpsk_table: npt.NDArray[np.complex128] = np.array(

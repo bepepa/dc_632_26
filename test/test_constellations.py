@@ -32,26 +32,23 @@ class TestNumberOfBitsPerSymbol:
 
     def test_bits_per_symbol(self, constellation, expected_bits):
         """Run the same test for all parameterized inputs."""
-        result = constellation.get_number_bits_per_symbol()
-        assert result == expected_bits
+        assert constellation.bits_per_symbol == expected_bits
+        assert constellation.bps == expected_bits
 
 
+@pytest.mark.parametrize(
+    "constellation, expected_symbol_energy",
+    [
+        (BPSK, 1),
+        (QPSK, 2),
+        (PSK8, 1),
+        (QAM16, 10),
+    ],
+)
 class TestSymbolEnregy:
     """Tests for get_symbol_energy."""
 
-    def test_bpsk_symbol_energy(self):
-        """test_bpsk_symbol_energy."""
-        assert BPSK.get_symbol_energy() == pytest.approx(1.0)
-
-    def test_qpsk_symbol_energy(self):
-        """test_qpsk_symbol_energy."""
-        assert QPSK.get_symbol_energy() == pytest.approx(2.0)
-
-    def test_psk8_symbol_energy(self):
-        """test_psk8_symbol_energy."""
-        # on unit circle
-        assert PSK8.get_symbol_energy() == pytest.approx(1.0)
-
-    def test_qam16_symbol_energy(self):
-        """test_qam16_symbol_energy."""
-        assert QAM16.get_symbol_energy() == pytest.approx(10.0)
+    def test_symbol_energy(self, constellation, expected_symbol_energy):
+        """Run the same test for all parameterized inputs."""
+        assert constellation.symbol_energy == pytest.approx(expected_symbol_energy)
+        assert constellation.Es == pytest.approx(expected_symbol_energy)
