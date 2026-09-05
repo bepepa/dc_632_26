@@ -12,16 +12,16 @@ class Constellation:
             mod_table, dtype=np.complex128
         )
 
-    def get_symbol_energy(self) -> np.float64:
-        return np.mean(np.abs(self.mod_table) ** 2)
+    def get_symbol_energy(self) -> float:
+        return float(np.mean(np.abs(self.mod_table) ** 2))
 
-    def get_number_bits_per_symbol(self) -> np.uint64:
-        return np.uint64(np.round(np.log2(len(self.mod_table))))
+    def get_number_bits_per_symbol(self) -> int:
+        return int(np.round(np.log2(len(self.mod_table))))
 
-    def get_bit_energy(self) -> np.float64:
+    def get_bit_energy(self) -> float:
         return self.get_symbol_energy() / self.get_number_bits_per_symbol()
 
-    def get_min_distance(self) -> np.float64:
+    def get_min_distance(self) -> float:
         """
         FIX ME: Summaryline.
 
@@ -45,13 +45,13 @@ class Constellation:
         """
         diff = np.abs(self.mod_table[:, np.newaxis] - self.mod_table[np.newaxis, :])
         np.fill_diagonal(diff, np.inf)  # fill out the 0's
-        return diff.min()
+        return float(diff.min())
 
     def get_energy_efficiency(self) -> np.float64:
         return self.get_min_distance() ** 2 / self.get_bit_energy()
 
-    def __getitem__(self, bit_seq: int | NumpyInt) -> np.complex128:
-        return self.mod_table[bit_seq]
+    def __getitem__(self, bit_seq: int | NumpyInt) -> complex:
+        return complex(self.mod_table[bit_seq])
 
 
 bpsk_table: npt.NDArray[np.complex128] = np.array(
