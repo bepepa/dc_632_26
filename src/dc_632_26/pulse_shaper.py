@@ -6,14 +6,18 @@ class PulseShaper:
 
         Parameters
         ----------
-        pulse : function 
-            Function that takes as an argument the number of points to return.
+        pulse : Callable
+            A Pulse instance (callable) that returns pulse samples. Plain functions
+            are not supported unless adapted.
         oversamp : int
             Number of samples per symbol (sample rate divided by symbol rate)
+            Provided to the Pulse instance so it generates the correct number of
+            samples per symbol.
     """ 
-    def __init__(self, pulse, oversamp):
-        self.pulse = pulse(oversamp)
-        self.oversamp = oversamp
+    def __init__(self, pulse):
+
+        self.pulse = pulse
+        self.oversamp = pulse.oversamp
 
     def generate_waveform(self, symbols:np.ndarray) -> np.ndarray:
         """Generates a waveform from the given symbols.
@@ -37,8 +41,10 @@ class PulseShaper:
         spaced_symbols = np.zeros(waveform_len, dtype=complex) 
         spaced_symbols[::self.oversamp] = symbols
 
+        # Get pulse samples 
+        pulse_samples = self.pulse()
         # Convolve with pulse to get waveform
-        waveform = np.convolve(spaced_symbols, self.pulse)
-        waveform = waveform[:waveform_len] #clipping, try removing clipping here 
+        waveform = np.convolve(spaced_symbols, pulse_samples)
+        #waveform = waveform[:waveform_len] #clipping, try removing clipping here 
         return waveform
         
