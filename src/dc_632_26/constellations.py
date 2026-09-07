@@ -23,13 +23,14 @@ standard_constellation.QAM16
 
 from types import SimpleNamespace
 import numpy as np
+# from helper import symbol_distance
 
 # ============================================================================
 # Helper Functions - TODO: Once integration is done, move to a helper.py
 # ============================================================================
 
-def distance(a, b):
-    """Compute Euclidean distance between points (works for scalars or arrays)."""
+def symbol_distance(a, b):
+    """Compute distance between constellation symbols (works for scalars or arrays)."""
     return np.abs(a - b)
 
 # ============================================================================
@@ -132,16 +133,16 @@ class Constellation:
         """Compute minimum distance between constellation points.
         Uses broadcasting to create NxN matrix of all pairwise distances.
         """
-        diff = distance(self.mod_table[:, np.newaxis], self.mod_table[np.newaxis, :])
+        diff = symbol_distance(self.mod_table[:, np.newaxis], self.mod_table[np.newaxis, :])
         np.fill_diagonal(diff, np.inf)
         return float(diff.min())
 
     def point_distance(self, bit_pattern1: int, bit_pattern2: int) -> float:
-        """Compute distance between two constellation points.
+        """Compute distance between two constellation points based on the constellation map. 
         
         Parameters: bit_pattern1, bit_pattern2 - binary literals (0b00, 0b01) or integer indices
         """
-        return float(distance(self.mod_table[bit_pattern1], self.mod_table[bit_pattern2]))
+        return float(symbol_distance(self.mod_table[bit_pattern1], self.mod_table[bit_pattern2]))
 
     def __getitem__(self, bit_pattern: int) -> complex:
         """Return constellation point for bit sequence index."""
