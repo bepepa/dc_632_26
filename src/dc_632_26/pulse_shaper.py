@@ -1,32 +1,18 @@
 import numpy as np
 
-
 class PulseShaper:
     """Class that generates a sampled waveform given pulse shape and input symbols.
 
         Parameters
         ----------
-<<<<<<< HEAD
         pulse : np.ndarray 
             Discrete-time pulse. Length is equal to the oversampling factor.
+        oversamp : int 
+            Sampling frequency divided by symbol rate = samples per symbol
     """ 
-    def __init__(self, pulse: np.ndarray):
+    def __init__(self, pulse: np.ndarray, oversamp: int):
         self.pulse = pulse
-        self.oversamp = len(pulse)
-=======
-        pulse : Callable
-            A Pulse instance (callable) that returns pulse samples. Plain functions
-            are not supported unless adapted.
-        oversamp : int
-            Number of samples per symbol (sample rate divided by symbol rate)
-            Provided to the Pulse instance so it generates the correct number of
-            samples per symbol.
-    """ 
-    def __init__(self, pulse):
-
-        self.pulse = pulse
-        self.oversamp = pulse.oversamp
->>>>>>> b374633aa699906bb7445eb719918605d24d617b
+        self.oversamp = oversamp
 
     def generate_waveform(self, symbols: np.ndarray) -> np.ndarray:
         """Generates a waveform from the given symbols.
@@ -46,18 +32,10 @@ class PulseShaper:
         >>> waveform = pulse_shaper.generate_waveform(symbols)
         """
         # Space the symbols out by the oversamp factor
-        waveform_len = len(symbols)*self.oversamp
+        waveform_len = (len(symbols)-1)*self.oversamp + 1
         spaced_symbols = np.zeros(waveform_len, dtype=complex) 
         spaced_symbols[::self.oversamp] = symbols
 
-        # Get pulse samples 
-        pulse_samples = self.pulse()
         # Convolve with pulse to get waveform
-<<<<<<< HEAD
         waveform = np.convolve(spaced_symbols, self.pulse)
-        waveform = waveform[:waveform_len]
-=======
-        waveform = np.convolve(spaced_symbols, pulse_samples)
-        #waveform = waveform[:waveform_len] #clipping, try removing clipping here 
->>>>>>> b374633aa699906bb7445eb719918605d24d617b
         return waveform
