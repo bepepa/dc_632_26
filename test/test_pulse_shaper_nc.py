@@ -1,6 +1,6 @@
-from dc_632_26.pulse_shaper import PulseShaper
-from dc_632_26.pulses import RectangularPulse
-from dc_632_26.pulses import HalfSinePulse
+from dc_632_26.pulse_shaper_nc import PulseShaper
+from dc_632_26.pulses_nc import RectangularPulse
+from dc_632_26.pulses_nc import HalfSinePulse
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -21,16 +21,11 @@ import matplotlib.pyplot as plt
 
 def test_pulse_shaper():
     # Setup
-<<<<<<< HEAD
-    oversamp = 5
-    pulse = np.arange(oversamp) # generates a linearly increasing pulse
-=======
     #pulse_func = np.arange # generates a linearly increasing pulse
     fs=1 #Hz for testing only
     #pulse = RectangularPulse(num_samples=4, oversamp=20)
     pulse = RectangularPulse(num_samples=4, oversamp=64)
     #pulse = HalfSinePulse(num_samples=20, oversamp=20)
->>>>>>> b374633aa699906bb7445eb719918605d24d617b
     symbols = np.array([1+1j, 1-1j, -1+1j, -1-1j])
     #symbols = (np.random.choice([1+1j, 1-1j, -1+1j, -1-1j], size=256))
 
@@ -45,7 +40,7 @@ def test_pulse_shaper():
     # np.testing.assert_array_almost_equal(iq.real, expected_real)
     # np.testing.assert_array_almost_equal(iq.imag, expected_imag)
 
-    print(f"pulse length",len(pulse_shaper.pulse()),"waveform length",len(iq))
+    print("pulse length", len(pulse_shaper.pulse.samples), "waveform length", len(iq))
     print("waveform length:", len(iq))
     print("first few samples:", iq[:10])
 

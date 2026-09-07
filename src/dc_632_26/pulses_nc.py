@@ -33,12 +33,15 @@ class Pulse:
         self.num_samples = num_samples
         self.oversamp = oversamp
         self.is_analytic = is_analytic
+        self.samples = self.compute_samples()
 
-    def generate(self):
-        raise NotImplementedError("Subclasses must implement generate()")
+# The next two are included for placeholder pulses, for example cosine squared,
+#  which may be partially implemented
+    def compute_samples(self):
+        raise NotImplementedError("Subclasses must implement compute_samples()")
 
-    def __call__(self):
-        return self.generate()
+    def analytic_freq_response(self):
+        return None
 
     def normalize_energy(self):
         """
@@ -47,11 +50,7 @@ class Pulse:
         """
         pass
 
-    # def freq_response(self):
-    #     if self.is_analytic and hasattr(self, "analytic_freq_response"):
-    #         return self.analytic_freq_response()
-    #     else:
-    #         return np.fft.fft(self())
+    
 
     def freq_response(self):
         if self.is_analytic:
@@ -59,7 +58,8 @@ class Pulse:
             if H is not None:
                 return H
         # use  numeric FFT if analytic_freq_response not available yet
-        return np.fft.fft(self.generate(),n=4096)
+        return np.fft.fft(self.samples,n=4096)
+    
         
     def plot_freq_response(self,fs):
         # Get frequency response (FFT or analytic)
@@ -100,8 +100,9 @@ class RectangularPulse(Pulse):
     def __init__(self, num_samples, oversamp):
         super().__init__(num_samples, oversamp, is_analytic=False)
 
-    def generate(self):
+    def compute_samples(self):
         return np.ones(self.num_samples)
+    
 
 class HalfSinePulse(Pulse):
     """
@@ -138,18 +139,18 @@ class HalfSinePulse(Pulse):
     )
         return None
 
-    def generate(self):
+    def compute_samples(self):
         #pulse=np.sqrt(2) * np.sin(np.pi * np.linspace(0., 1., self.num_samples, endpoint=False))
         return np.sqrt(2) * np.sin(np.pi * np.linspace(0., 1., self.num_samples, endpoint=False))
 
     
-class CosineSquaredPulse():
+class CosineSquaredPulse(Pulse):
 
     """
     Cosine-squared pulse placeholder.
 
     TODO: 
-        Implement generate() 
+        Implement compute_samples() 
         Implement analytic frequency response once symbolic form is finalized.
         
     """
@@ -157,9 +158,9 @@ class CosineSquaredPulse():
     def __init__(self, num_samples, oversamp):
         super().__init__(num_samples, oversamp, is_analytic=True)
 
-    def generate(self):
+    def compute_samples(self):
         raise NotImplementedError(
-            "CosineSquaredPulse.generate() not implemented yet."
+            "CosineSquaredPulse.compute_samples() not implemented yet."
         )
     
     def analytic_freq_response(self):
