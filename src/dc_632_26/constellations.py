@@ -153,3 +153,8 @@ standard_constellation = SimpleNamespace(
     PSK8=Constellation(PSK8_MAP,normalize=True),
     QAM16=Constellation(QAM16_MAP,normalize=True)
 )
+
+BPSK = standard_constellation.BPSK
+QPSK = standard_constellation.QPSK
+PSK8 = standard_constellation.PSK8
+QAM16 = standard_constellation.QAM16
