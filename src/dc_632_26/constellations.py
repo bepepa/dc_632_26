@@ -34,7 +34,7 @@ def symbol_distance(a, b):
     return np.abs(a - b)
 
 # ============================================================================
-# Standard Constellation Tables
+# Standard Grey Coded Constellation Tables
 # ============================================================================
 
 BPSK_MAP = {
@@ -45,19 +45,19 @@ BPSK_MAP = {
 QPSK_MAP = {
     0b00: 1+1j,
     0b01: -1+1j,
-    0b10: -1-1j,
-    0b11: 1-1j
+    0b11: -1-1j,
+    0b10: 1-1j,
 }
 
 PSK8_MAP = {
     0b000: 1+0j,
     0b001: np.sqrt(2)/2 * (1+1j),
-    0b010: 0+1j,
-    0b011: np.sqrt(2)/2 * (-1+1j),
-    0b100: -1+0j,
-    0b101: np.sqrt(2)/2 * (-1-1j),
-    0b110: 0-1j,
-    0b111: np.sqrt(2)/2 * (1-1j)
+    0b011: 0+1j,                   
+    0b010: np.sqrt(2)/2 * (-1+1j),  
+    0b110: -1+0j,                  
+    0b111: np.sqrt(2)/2 * (-1-1j),  
+    0b101: 0-1j,                   
+    0b100: np.sqrt(2)/2 * (1-1j), 
 }
 
 QAM16_MAP = {
@@ -131,11 +131,11 @@ class Constellation:
 
     def _compute_min_distance(self) -> float:
         """Compute minimum distance between constellation points.
-        Uses broadcasting to create NxN matrix of all pairwise distances.
+        Uses broadcasting to create NxN matrix of all pairwise distances. 
         """
-        diff = symbol_distance(self.mod_table[:, np.newaxis], self.mod_table[np.newaxis, :])
-        np.fill_diagonal(diff, np.inf)
-        return float(diff.min())
+        diff = symbol_distance(self.mod_table[:, np.newaxis], self.mod_table[np.newaxis, :])  # compute all pairwise distances
+        np.fill_diagonal(diff, np.inf)  # Remove self-pair distance, which is 0
+        return float(diff.min())  # return min dist
 
     def point_distance(self, bit_pattern1: int, bit_pattern2: int) -> float:
         """Compute distance between two constellation points based on the constellation map. 
@@ -154,8 +154,8 @@ standard_constellation = SimpleNamespace(
     PSK8=Constellation(PSK8_MAP,normalize=True),
     QAM16=Constellation(QAM16_MAP,normalize=True)
 )
-
-BPSK = standard_constellation.BPSK
-QPSK = standard_constellation.QPSK
-PSK8 = standard_constellation.PSK8
-QAM16 = standard_constellation.QAM16
+# Allow legacy access
+BPSK=Constellation(BPSK_MAP,normalize=False)
+QPSK=Constellation(QPSK_MAP,normalize=False)
+PSK8=Constellation(PSK8_MAP,normalize=False)
+QAM16=Constellation(QAM16_MAP,normalize=False)
