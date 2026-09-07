@@ -1,77 +1,81 @@
 import numpy as np
 import matplotlib.pyplot as plt   
 import warnings  
-  
-"""Class that supports pulse shaping utilities.
+from abc import ABC, abstractmethod
 
-    This module defines several pulse types used for waveform generation,
-    including rectangle, and half-sine pulses and 
-    placeholders for additional shapes such
-    as cosine squared.
-
-    The pulses are returned as NumPy arrays suitable for use with the
-    pulse_shaper module.
-
-    References
-    ----------
-    copilot - Used for python references with caution and checking 
-
-    https://numpy.org/devdocs/reference/generated/numpy.fft.fft.html
-
-    TODO
-    ----------
-    pull fs, oversamp, and symbol_rate from Transmitter class once integrated (Parent class)
-
-    normalize_energy
-
-    cosine_squared pulse
-""" 
-
-class Pulse:
-
-    def __init__(self, num_samples, oversamp, is_analytic):
+class Pulse(ABC):
+    """Base class representing a pulse
+        Parameters
+        ----------
+        oversamp : int
+            Oversampling rate / number of samples in one pulse
+    """ 
+    def __init__(self, num_samples):
         self.num_samples = num_samples
-        self.oversamp = oversamp
-        self.is_analytic = is_analytic
+        self.samples = self._generate_samples()
+        self.nfft = 4096
 
-    def generate(self):
-        raise NotImplementedError("Subclasses must implement generate()")
-
-    def __call__(self):
-        return self.generate()
-
-    def normalize_energy(self):
-        """
-        TODO: Compute pulse energy.
-    
-        """
+    @abstractmethod
+    def _generate_samples(self):
+        """Subclasses must implement.
+        Generates the discrete-time pulse samples."""
         pass
 
-    # def freq_response(self):
-    #     if self.is_analytic and hasattr(self, "analytic_freq_response"):
-    #         return self.analytic_freq_response()
-    #     else:
-    #         return np.fft.fft(self())
+    def _normalize_energy(self, samples: np.ndarray) -> np.ndarray:
+        """Normalizes samples to unit energy
 
-    def freq_response(self):
-        if self.is_analytic:
-            H = self.analytic_freq_response()
-            if H is not None:
-                return H
-        # use  numeric FFT if analytic_freq_response not available yet
-        return np.fft.fft(self.generate(),n=4096)
-        
-    def plot_freq_response(self,fs):
-        # Get frequency response (FFT or analytic)
-        H = self.freq_response()
-        # Number of points
-        N = len(H)
+        Parameters
+        ----------
+        samples : np.ndarray
+            Samples to normalize
+
+        Returns
+        -------
+        np.ndarray
+            Normalized samples
+        """
+        energy = np.sum(samples**2)
+        return samples / np.sqrt(energy)
+
+    def analytic_freq_response(self):
+        """Optional method to retun the analytic frequency response of the pulse, starting at freq 0. 
+        Implemented by subclass.
+        """
+        raise NotImplementedError("Not yet implemented by subclass")
+
+    def freq_response(self) -> np.ndarray:
+        """Calculate the frequency of the pulse via Discrete Fourier Transform
+
+        Returns
+        -------
+        np.ndarray
+            Discrete Fourier Transform of the pulse
+        """
+        return np.fft.fft(self.samples, n=self.nfft)
+    
+    def plot_freq_response(self, fs: float):
+        """Creates a plot of the pulse's frequency response (magnitude only)
+
+        Plots the DFT of the pulse, as well as the analytic frequency response if defined.
+
+        Parameters
+        ----------
+        fs : float
+            Sampling frequency
+        """
+        # Get frequency response
+        H = np.fft.fftshift(self.freq_response())
         # Frequency axis in Hz
-        freqs = np.fft.fftshift(np.fft.fftfreq(N, d=1/fs))
-        # Shifted frequency response
-        Hs = np.fft.fftshift(H)
+        freqs = np.fft.fftshift(np.fft.fftfreq(self.nfft, d=1/fs))
+
         #Plot magnitude
-        plt.plot(freqs, np.abs(Hs))
+        plt.plot(freqs, np.abs(H), label='DFT')
+        try: # Plot the analytic response, if available
+            H_analytic = self.analytic_freq_response()
+            plt.plot(freqs, np.abs(H_analytic), label='Analytic')
+            plt.legend()
+        except NotImplementedError:
+            pass
         plt.title("Pulse Frequency Response")
         plt.xlabel("Frequency (Hz)")
         plt.ylabel("|H(f)|")
@@ -80,99 +84,48 @@ class Pulse:
 
 
 class RectangularPulse(Pulse):
-
-    """
+    """Rectangular pulse
     Parameters
         ----------
         num_samples : int
             Number of samples in the pulse
-        oversamp : int
-            Number of samples per symbol (sample rate divided by symbol rate)
-
-        Returns
-        ---------
-        pulse : np.ndarray
-            HalfSine pulse of length `num_samples`.
-
-            analytic_freq_response : np.ndarray.
     """
 
-    def __init__(self, num_samples, oversamp):
-        super().__init__(num_samples, oversamp, is_analytic=False)
+    def __init__(self, num_samples):
+        super().__init__(num_samples)
 
-    def generate(self):
-        return np.ones(self.num_samples)
+    def _generate_samples(self):
+        samples = np.ones(self.num_samples)
+        return self._normalize_energy(samples)
+
 
 class HalfSinePulse(Pulse):
-    """
+    """Half-sine pulse
+
         Parameters
             ----------
             num_samples : int
                 Number of samples in the pulse
-            oversamp : int
-                Number of samples per symbol (sample rate divided by symbol rate)
-    
-            Returns
-            ---------
-            pulse : np.ndarray
-                HalfSine pulse of length `num_samples`. 
-
-            Notes
-            -----
-            `is_analytic=True` is set, but the analytic frequency response is
-            not yet implemented. A warning is issued and the numeric FFT fallback
-            is used instead.
-
-            TODO
-            ----
-            Implement analytic frequency response once symbolic form is finalized.
         """
     
-    def __init__(self, num_samples, oversamp):
-        super().__init__(num_samples, oversamp, is_analytic=True)
+    def __init__(self, num_samples):
+        super().__init__(num_samples)
 
-    def analytic_freq_response(self):
-        warnings.warn(
-        "Analytic frequency response not yet implemented; using numeric FFT.",
-        UserWarning
-    )
-        return None
-
-    def generate(self):
-        #pulse=np.sqrt(2) * np.sin(np.pi * np.linspace(0., 1., self.num_samples, endpoint=False))
-        return np.sqrt(2) * np.sin(np.pi * np.linspace(0., 1., self.num_samples, endpoint=False))
+    def _generate_samples(self):
+        return self._normalize_energy(np.sin(np.pi * np.linspace(0., 1., self.num_samples, endpoint=False)))
 
     
 class CosineSquaredPulse():
+    """Cosine-squared pulse
 
-    """
-    Cosine-squared pulse placeholder.
-
-    TODO: 
-        Implement generate() 
-        Implement analytic frequency response once symbolic form is finalized.
-        
+        Parameters
+            ----------
+            num_samples : int
     """
 
-    def __init__(self, num_samples, oversamp):
-        super().__init__(num_samples, oversamp, is_analytic=True)
+    def __init__(self, num_samples):
+        super().__init__(num_samples)
 
-    def generate(self):
-        raise NotImplementedError(
-            "CosineSquaredPulse.generate() not implemented yet."
-        )
+    def _generate_samples(self):
+        pass # placeholder
     
-    def analytic_freq_response(self):
-            warnings.warn(
-            "Analytic frequency response not yet implemented; using numeric FFT.",
-            UserWarning
-        )
-            return None
-    # def cosine_squared(num_samples):
-    
-    # time_grid = np.arange(num_samples) / num_samples
-    # pulse = np.sqrt(8 / 3) * (1 / 2 - 1 / 2 * np.cos(2 * np.pi * time_grid))
-    
-    # return pulse
-    
-       

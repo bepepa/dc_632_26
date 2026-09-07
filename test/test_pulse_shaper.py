@@ -2,7 +2,9 @@ from dc_632_26.pulse_shaper import PulseShaper
 import numpy as np
 
 def test_pulse_shaper():
-    # Setup: Pulse length = oversamp
+    """Nominal test case with full response pulse.
+    """
+    # Setup
     oversamp = 5
     pulse_length = oversamp
     pulse = np.arange(oversamp) # generates a linearly increasing pulse
@@ -19,7 +21,9 @@ def test_pulse_shaper():
     np.testing.assert_array_almost_equal(iq.imag, expected_imag)
 
 def test_long_pulse():
-    # Setup: Pulse length = oversamp
+    """Partial response pulse (pulse length is greater than oversampling factor)
+    """
+    # Setup
     oversamp = 3
     pulse_length = 5
     pulse = np.arange(pulse_length) # generates a linearly increasing pulse
