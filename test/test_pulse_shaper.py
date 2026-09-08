@@ -1,4 +1,5 @@
 from dc_632_26.pulse_shaper import PulseShaper
+import dc_632_26.pulses as pul
 import numpy as np
 
 def test_pulse_shaper():
@@ -18,3 +19,23 @@ def test_pulse_shaper():
     np.testing.assert_array_almost_equal(iq.imag, expected_imag)
 
 # test_pulse_shaper()
+
+def test_pulses():
+    
+    # Setup
+    num_samples_list = [3, 5, 13, 27, 100]
+    
+    # Testing
+    for num_samples in num_samples_list:
+    
+        rectangular_pulse = pul.rectangular(num_samples)
+        triangular_pulse = pul.triangular(num_samples)
+        cosine_squared_pulse = pul.cosine_squared(num_samples)
+        half_sine_pulse = pul.half_sine(num_samples)
+        
+        np.testing.assert_almost_equal(np.sum(rectangular_pulse ** 2), 1, 8)
+        np.testing.assert_almost_equal(np.sum(triangular_pulse ** 2), 1, 8)
+        np.testing.assert_almost_equal(np.sum(cosine_squared_pulse ** 2), 1, 8)
+        np.testing.assert_almost_equal(np.sum(half_sine_pulse ** 2), 1, 8)
+        
+#test_pulses()
