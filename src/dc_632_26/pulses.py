@@ -4,6 +4,16 @@ import matplotlib.pyplot as plt
 # Defining the rectangular pulse
 def rectangular(num_samples):
     
+    '''
+    Parameters:
+    ------------
+    num_samples (int): number of samples
+    
+    Returns:
+    ------------
+    pulse (np.array): normalized array of samples according to the pulse shape
+    '''
+    
     # Creating the rectangular shape
     pulse = np.ones(num_samples)
     
@@ -12,6 +22,16 @@ def rectangular(num_samples):
 
 # Defining the triangular pulse
 def triangular(num_samples):
+    
+    '''
+    Parameters:
+    ------------
+    num_samples (int): number of samples
+    
+    Returns:
+    ------------
+    pulse (np.array): normalized array of samples according to the pulse shape
+    '''
     
     # Time axis
     t = np.arange(num_samples) / num_samples
@@ -28,6 +48,16 @@ def triangular(num_samples):
 
 # Defining the cosine squared pulse
 def cosine_squared(num_samples):
+    
+    '''
+    Parameters:
+    ------------
+    num_samples (int): number of samples
+    
+    Returns:
+    ------------
+    pulse (np.array): normalized array of samples according to the pulse shape
+    '''
     
     # Time axis
     t = np.arange(num_samples) / num_samples
