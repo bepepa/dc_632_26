@@ -1,39 +1,60 @@
 import numpy as np
+import numpy.typing as npt
 from itertools import batched
 
-def _bits_to_int(bits: np.ndarray):
-    counter = 0
-    sum = 0
-    for bit in bits[::-1]:
-        sum += bit*2**counter
-        counter += 1
-    return sum
+def bits_to_int(bits: npt.ArrayLike) -> int:
+    """
+    Function that takes a list of bit represented by integers
+    and outputs an integer.
 
-def modulation(bits, constellation):
+    Parameters
+    ----------
+    bits : npt.ArrayLike
+        bitstring represented as zeros and ones.
+
+    Returns
+    -------
+    int
+        The bits converted to an integer
+    """
+
+    result = 0
+    bits = np.asarray(bits)
+    # MSB to LSB
+    for bit in bits:
+        result = result << 1
+        result += bit
+    return result
+
+def modulation(bits: np.ndarray, constellation: dict[int, np.complex128]) -> np.ndarray:
     """
     Function that takes bits and maps them according to the mapper.
     The bits are a numpy ndarray, the mapper is a function that should
     take the bits two at a time and map them to a complex value.
 
-    It returns a complex array.
+    Parameters
+    ----------
+    bits : np.ndarray
+        bitstring represented as zeros and ones
+    constellation : dict[int, np.complex128]
+        mapping between values of the bits, in integer form,
+        and the actual complex value of the symbol sequence at
+        that point.
 
-    TODO: be able to take varying bits per symbol.
-    Include support functions for Eb, Es, Bps, eta(energy efficiency)
-    Split this out into a function for the constellation and a function
-    to actually map bits to symbols given a constellation
+    Returns
+    -------
+    np.ndarray
+        The complex symbols corresponding to the given
+        bitstring
     """
 
-    num_bits_to_take = int(np.log2(len(constellation)))
-    remainder = bits.size % num_bits_to_take
+    bits_per_symbol = int(np.log2(len(constellation)))
+    remainder = bits.size % bits_per_symbol
     if remainder != 0:
-        padding = num_bits_to_take - remainder
+        padding = bits_per_symbol - remainder
         bits = np.append(bits, [0]*padding).astype('int')
-    # padded_bits = np.append(bits, [0,0]) if bits.size % 2 == 0 else np.append(bits,[0,0,1])
-    symbols = np.empty(bits.size//num_bits_to_take, dtype=np.complex128)
-    for idx, bit_seq in enumerate(batched(bits, num_bits_to_take)):
-       symbols[idx] = constellation[_bits_to_int(bit_seq)]
-    # groups = [bits[i:i + num_bits_to_take] for i in range(0, len(bits), num_bits_to_take)]
-    # symbols = np.array([constellation[_bits_to_int(group)] for group in groups], dtype=np.complex128)
+    symbols = np.empty(bits.size//bits_per_symbol, dtype=np.complex128)
+    for idx, bit_seq in enumerate(batched(bits, bits_per_symbol)):
+       symbols[idx] = constellation[bits_to_int(bit_seq)]
 
     return symbols
-
