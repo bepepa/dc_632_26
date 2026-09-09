@@ -114,17 +114,51 @@ class HalfSinePulse(Pulse):
         return self._normalize_energy(np.sin(np.pi * np.linspace(0., 1., self.num_samples, endpoint=False)))
 
     
-class CosineSquaredPulse():
+class CosineSquaredPulse(Pulse):
     """Cosine-squared pulse
 
         Parameters
             ----------
             num_samples : int
+                Number of samples in the pulse
     """
 
     def __init__(self, num_samples):
         super().__init__(num_samples)
 
     def _generate_samples(self):
-        pass # placeholder
-    
+        # Time axis
+        t = np.arange(self.num_samples) / self.num_samples
+        
+        # Creating the cosine squared shape
+        pulse = 1 / 2 - 1 / 2 * np.cos(2 * np.pi * t)
+        
+        # Normalizing to unit energy
+        return self._normalize_energy(pulse)
+
+
+class TrianglePulse(Pulse):
+    """Triangular pulse
+
+        Parameters
+            ----------
+            num_samples : int
+                Number of samples in the pulse
+    """
+
+    def __init__(self, num_samples):
+        super().__init__(num_samples)
+
+    def _generate_samples(self):
+        # Time axis
+        t = np.arange(self.num_samples) / self.num_samples
+        
+        # Creating the triangular shape
+        pulse = np.piecewise(t,
+                            [((0 <= t) & (t < 0.5)),
+                            ((0.5 <= t) & (t < 1))],
+                            [lambda t: t,
+                            lambda t: 1 - t])
+        
+        # Normalizing to unit energy
+        return self._normalize_energy(pulse)
