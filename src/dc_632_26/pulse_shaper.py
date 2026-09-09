@@ -1,4 +1,5 @@
 import numpy as np
+from dc_632_26.pulses import Pulse
 
 
 class PulseShaper:
@@ -6,12 +7,12 @@ class PulseShaper:
 
         Parameters
         ----------
-        pulse : np.ndarray 
-            Discrete-time pulse. Length is equal to the oversampling factor.
+        pulse : Pulse
+            Pulse object
         oversamp : int 
             Sampling frequency divided by symbol rate = samples per symbol
     """ 
-    def __init__(self, pulse: np.ndarray, oversamp: int):
+    def __init__(self, pulse: Pulse, oversamp: int):
         self.pulse = pulse
         self.oversamp = oversamp
 
@@ -38,5 +39,5 @@ class PulseShaper:
         spaced_symbols[::self.oversamp] = symbols
 
         # Convolve with pulse to get waveform
-        waveform = np.convolve(spaced_symbols, self.pulse)
+        waveform = np.convolve(spaced_symbols, self.pulse.samples)
         return waveform

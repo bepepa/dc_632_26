@@ -1,13 +1,14 @@
 from dc_632_26.pulse_shaper import PulseShaper
 import numpy as np
+from unittest.mock import MagicMock
 
 def test_pulse_shaper():
     """Nominal test case with full response pulse.
     """
     # Setup
     oversamp = 5
-    pulse_length = oversamp
-    pulse = np.arange(oversamp) # generates a linearly increasing pulse
+    pulse = MagicMock()  # Mock out the Pulse class and define samples directly
+    pulse.samples = np.arange(oversamp) # generates a linearly increasing pulse
     symbols = np.array([1+1j, 1-1j, -1+1j, -1-1j])
 
     # Test
@@ -26,7 +27,8 @@ def test_long_pulse():
     # Setup
     oversamp = 3
     pulse_length = 5
-    pulse = np.arange(pulse_length) # generates a linearly increasing pulse
+    pulse = MagicMock()
+    pulse.samples = np.arange(pulse_length) # generates a linearly increasing pulse
     symbols = np.array([1, -1, 2])
 
     # Test
