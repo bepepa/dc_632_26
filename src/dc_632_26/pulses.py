@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import warnings  
 from abc import ABC, abstractmethod
 
+<<<<<<< HEAD
 class Pulse(ABC):
     """Base class representing a pulse
         Parameters
@@ -110,6 +111,74 @@ class HalfSinePulse(Pulse):
     
     def __init__(self, num_samples):
         super().__init__(num_samples)
+=======
+# Defining the rectangular pulse
+def rectangular(num_samples):
+    
+    '''
+    Parameters:
+    ------------
+    num_samples (int): number of samples
+    
+    Returns:
+    ------------
+    pulse (np.array): normalized array of samples according to the pulse shape
+    '''
+    
+    # Creating the rectangular shape
+    pulse = np.ones(num_samples)
+    
+    # Normalizing to unit energy
+    return pulse / np.linalg.norm(pulse)
+
+# Defining the triangular pulse
+def triangular(num_samples):
+    
+    '''
+    Parameters:
+    ------------
+    num_samples (int): number of samples
+    
+    Returns:
+    ------------
+    pulse (np.array): normalized array of samples according to the pulse shape
+    '''
+    
+    # Time axis
+    t = np.arange(num_samples) / num_samples
+    
+    # Creating the triangular shape
+    pulse = np.piecewise(t,
+                         [((0 <= t) & (t < 0.5)),
+                          ((0.5 <= t) & (t < 1))],
+                         [lambda t: t,
+                          lambda t: 1 - t])
+    
+    # Normalizing to unit energy
+    return pulse / np.linalg.norm(pulse)
+
+# Defining the cosine squared pulse
+def cosine_squared(num_samples):
+    
+    '''
+    Parameters:
+    ------------
+    num_samples (int): number of samples
+    
+    Returns:
+    ------------
+    pulse (np.array): normalized array of samples according to the pulse shape
+    '''
+    
+    # Time axis
+    t = np.arange(num_samples) / num_samples
+    
+    # Creating the cosine squared shape
+    pulse = 1 / 2 - 1 / 2 * np.cos(2 * np.pi * t)
+    
+    # Normalizing to unit energy
+    return pulse / np.linalg.norm(pulse)
+>>>>>>> 5aac737d9a72d6f4787e5f41ef2f1fd29d2533c4
 
     def _generate_samples(self):
         return self._normalize_energy(np.sin(np.pi * np.linspace(0., 1., self.num_samples, endpoint=False)))
