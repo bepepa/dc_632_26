@@ -1,5 +1,4 @@
 from dc_632_26.pulse_shaper import PulseShaper
-import dc_632_26.pulses as pul
 import numpy as np
 
 def test_pulse_shaper():
