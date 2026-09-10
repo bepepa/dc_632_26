@@ -30,6 +30,65 @@ class TestGetItem:
         # QPSK is normalized, so divided by sqrt(2)
         assert standard_constellation.QPSK[0] == pytest.approx(1/np.sqrt(2) + 1j/np.sqrt(2))
         assert standard_constellation.QPSK[3] == pytest.approx(-1/np.sqrt(2) - 1j/np.sqrt(2))
+        
+@pytest.mark.parametrize(
+    "constellation, expected_points",
+    [
+        (BPSK, [1 + 0j, -1 + 0j]),
+        (
+            QPSK,
+            [
+                1 + 1j,
+                -1 + 1j,
+                1 - 1j,
+                -1 - 1j,
+            ],
+        ),
+        (
+            PSK8,
+            [
+                1 + 0j,
+                np.sqrt(2) / 2 * (1 + 1j),
+                np.sqrt(2) / 2 * (-1 + 1j),
+                0 + 1j,
+                np.sqrt(2) / 2 * (1 - 1j),
+                0 - 1j,
+                -1 + 0j,
+                np.sqrt(2) / 2 * (-1 - 1j),
+            ],
+        ),
+        (
+            QAM16,
+            [
+                -3 - 3j,
+                -3 - 1j,
+                -3 + 3j,
+                -3 + 1j,
+                -1 - 3j,
+                -1 - 1j,
+                -1 + 3j,
+                -1 + 1j,
+                3 - 3j,
+                3 - 1j,
+                3 + 3j,
+                3 + 1j,
+                1 - 3j,
+                1 - 1j,
+                1 + 3j,
+                1 + 1j,
+            ],
+        ),
+    ],
+)
+
+class TestLegacyGetItem:
+    """Tests __getitem__ for every point in the legacy constellations."""
+
+    def test_get_item(self, constellation, expected_points):
+        """Returns the expected constellation point for every index."""
+        for i, expected in enumerate(expected_points):
+            assert constellation[i] == pytest.approx(expected)
+            assert isinstance(constellation[i], complex)
 
 @pytest.mark.parametrize(
     "constellation, expected_bits",
@@ -40,6 +99,7 @@ class TestGetItem:
         (standard_constellation.QAM16, 4),
     ],
 )
+
 class TestNumberOfBitsPerSymbol:
     """Tests for getting the number of bits in predefined constellations."""
 
