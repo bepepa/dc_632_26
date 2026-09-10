@@ -148,6 +148,10 @@ class Constellation:
         """Return constellation point for bit sequence index."""
         return complex(self.mod_table[bit_pattern])
 
+    def __call__(self):
+        """Make Constellations object callable. Returns Mod table as numpy array"""
+        return self.mod_table
+
 standard_constellation = SimpleNamespace(
     BPSK=Constellation(BPSK_MAP,normalize=True),
     QPSK=Constellation(QPSK_MAP,normalize=True),
