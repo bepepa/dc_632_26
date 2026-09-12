@@ -1,7 +1,8 @@
 import numpy as np
 import numpy.typing as npt
+from dc_632_26.constellations import *
 
-def bits_to_int( bits_BS: npt.ArrayLike ) -> np.ndarray:
+def bits_to_int( bits_N: npt.ArrayLike, bits_per_symbol: int ) -> np.ndarray:
     """
     Function that takes a list of bit represented by integers
     and outputs an integer.
@@ -19,15 +20,17 @@ def bits_to_int( bits_BS: npt.ArrayLike ) -> np.ndarray:
         The bits converted to an integer
     """
 
-    bits_BS = np.asarray( bits_BS )
-    result_S = np.zeros( bits_BS.shape[-1] ).astype( 'int' )
+    bits_N = np.asarray( bits_N )
+    bits_BS = np.reshape( bits_N, (bits_per_symbol, -1),order='F')
+    print(bits_BS)
+    result_S = np.zeros( bits_BS.shape[-1], dtype='int')
     # MSB to LSB
     for bit in bits_BS:
         result_S = result_S << 1
         result_S += bit
     return result_S
 
-def modulation( bits_N: np.ndarray, constellation_map_O: np.ndarray ) -> np.ndarray:
+def modulation( bits_N: np.ndarray, constellation_map_O: Constellation ) -> np.ndarray:
     """
     Function that takes bits and maps them according to the mapper.
     The bits are a numpy ndarray, the mapper is a function that should
@@ -54,13 +57,11 @@ def modulation( bits_N: np.ndarray, constellation_map_O: np.ndarray ) -> np.ndar
         B is the number of bits per symbol
     """
 
-    bits_per_symbol = int( np.log2( len( constellation_map_O ) ) )
+    bits_per_symbol = int( np.log2( len( constellation_map_O() ) ) )
     remainder = bits_N.size % bits_per_symbol
     if remainder != 0:
         padding = bits_per_symbol - remainder
         bits_N = np.append( bits_N, [0] * padding).astype('int')
-    symbols_S = np.empty( bits_N.size // bits_per_symbol, dtype=np.complex128)
-    bits_reshaped_BS = np.reshape( bits_N, (bits_per_symbol, -1), order='F')
-    symbols_S = constellation_map_O[ bits_to_int( bits_reshaped_BS ) ]
+    symbols_S = constellation_map_O()[ bits_to_int( bits_N, bits_per_symbol ) ]
 
     return symbols_S
