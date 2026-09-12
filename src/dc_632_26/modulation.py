@@ -7,13 +7,17 @@ def bits_to_int( bits_N: npt.ArrayLike, bits_per_symbol: int ) -> np.ndarray:
     Function that takes a list of bit represented by integers
     and outputs an integer.
 
+    Notes on shapes:
+    Number of rows is number of bits per symbol. MSB is first(top) - B
+    Number of columns is number of symbols. - S
+
     Parameters
     ----------
-    bits_BS : npt.ArrayLike
+    bits_N : npt.ArrayLike
         bitstring represented as zeros and ones.
         Shaped to process multiple symbols at once.
-        Number of rows is number of bits per symbol. MSB is first(top) - B
-        Number of columns is number of symbols. - S
+        N is the number of bits
+        
     Returns
     -------
     np.ndarray
@@ -36,14 +40,18 @@ def modulation( bits_N: np.ndarray, constellation_map_O: Constellation ) -> np.n
     The bits are a numpy ndarray, the mapper is a function that should
     take the bits bits_per_symbol at a time and map them to a complex value.
 
+    Notes on shapes:
+    S is the number of symbols
+
+
     Parameters
     ----------
     bits_N : np.ndarray
         bitstring represented as zeros and ones
         N is the number of bits, it can change slightly
         if we pad out the sequence.
-    constellation_map_O : np.ndarray
-        mapping between values of the bits, as indices,
+    constellation_map_O : Constellation
+        Class containing the mapping between values of the bits, as indices,
         and the actual complex value of the symbol sequence at
         that point.
         O is the modulation order.
@@ -53,8 +61,6 @@ def modulation( bits_N: np.ndarray, constellation_map_O: Constellation ) -> np.n
     np.ndarray
         The complex symbols corresponding to the given
         bitstring
-        S is the number of symbols
-        B is the number of bits per symbol
     """
 
     bits_per_symbol = int( np.log2( len( constellation_map_O() ) ) )
