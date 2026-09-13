@@ -16,6 +16,7 @@ TEST_QPSK = np.array([1+1j,-1+1j,1-1j,-1-1j])
 class ConstellationMock:
     def __init__(self, constellation):
         self.mod_table = constellation
+        self.bps = int(np.round(np.log2(len(self.mod_table))))
     def __call__(self):
         return self.mod_table
 

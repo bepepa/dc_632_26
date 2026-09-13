@@ -26,7 +26,6 @@ def bits_to_int( bits_N: npt.ArrayLike, bits_per_symbol: int ) -> np.ndarray:
 
     bits_N = np.asarray( bits_N )
     bits_BS = np.reshape( bits_N, (bits_per_symbol, -1),order='F')
-    print(bits_BS)
     result_S = np.zeros( bits_BS.shape[-1], dtype='int')
     # MSB to LSB
     for bit in bits_BS:
@@ -63,11 +62,11 @@ def modulation( bits_N: np.ndarray, constellation_map_O: Constellation ) -> np.n
         bitstring
     """
 
-    bits_per_symbol = int( np.log2( len( constellation_map_O() ) ) )
+    bits_per_symbol = constellation_map_O.bps
     remainder = bits_N.size % bits_per_symbol
     if remainder != 0:
         padding = bits_per_symbol - remainder
-        bits_N = np.append( bits_N, [0] * padding).astype('int')
+        bits_N = np.append(bits_N, np.zeros(padding, dtype=bits_N.dtype))
     symbols_S = constellation_map_O()[ bits_to_int( bits_N, bits_per_symbol ) ]
 
     return symbols_S
