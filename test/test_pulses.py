@@ -1,4 +1,5 @@
 import dc_632_26.pulses as pulses
+import pytest
 import numpy as np
 
 def test_unit_energy():
@@ -24,3 +25,16 @@ def test_unit_energy():
         np.testing.assert_almost_equal(np.sum(triangular_pulse.samples ** 2), 1, 8)
         np.testing.assert_almost_equal(np.sum(cosine_squared_pulse.samples ** 2), 1, 8)
         np.testing.assert_almost_equal(np.sum(half_sine_pulse.samples ** 2), 1, 8)
+
+def test_pulse_class():
+    '''Confirms that Pulse subclasses must implement a _generate_samples method'''
+
+    # Setup: Create a pulse class without defining _generate_samples
+    class TestPulse(pulses.Pulse):
+        def __init__(self, num_samples):
+                super().__init__(num_samples)
+
+    # Test
+    with pytest.raises(TypeError) as excinfo:
+        pulse = TestPulse(5)
+    assert "Can't instantiate abstract class TestPulse without an implementation for abstract method '_generate_samples'" in str(excinfo.value)

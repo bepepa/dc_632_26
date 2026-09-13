@@ -8,11 +8,13 @@ class Pulse(ABC):
         ----------
         oversamp : int
             Oversampling rate / number of samples in one pulse
+        nfft : int, optional
+            Number of FFT points to use when calculating frequency response. Default is 4096.
     """ 
-    def __init__(self, num_samples):
+    def __init__(self, num_samples, nfft=4096):
         self.num_samples = num_samples
         self.samples = self._generate_samples()
-        self.nfft = 4096
+        self.nfft = nfft
 
     @abstractmethod
     def _generate_samples(self):
