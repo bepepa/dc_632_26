@@ -8,15 +8,20 @@ class Pulse(ABC):
     """Base class representing a pulse
     Parameters
     ----------
-    oversamp : int
-        Oversampling rate / number of samples in one pulse
+    num_samples : int
+        Number of samples in the pulse
+    oversamp : int, optional
+        Oversampling rate (samples per symbol period). Defaults to num_samples (full-response pulse).
     nfft : int, optional
         Number of FFT points to use when calculating frequency response. Default is 4096.
     """
 
-    def __init__(self, num_samples, nfft=4096):
+    def __init__(self, num_samples: int, oversamp: int=None, nfft: int=4096):
         self.num_samples = num_samples
-        self.oversamp = num_samples  ## FIX ME: needs to be separate from num_samples
+        if oversamp is None:
+            self.oversamp = num_samples 
+        else:
+            self.oversamp = oversamp
         self.samples = self._generate_samples()
         self.nfft = nfft
 
@@ -131,7 +136,7 @@ class RectangularPulse(Pulse):
             The frequency response is calculated analytically by the subclass, if implemented.
         """
         freqs = np.linspace(
-            -self.oversamp / (2 * T), self.oversamp / (2 * T), self.nfft
+            -self.num_samples / (2 * T), self.num_samples / (2 * T), self.nfft
         )
         H = np.sqrt(T) * np.sinc(freqs * T)
         return freqs, H
@@ -141,13 +146,15 @@ class HalfSinePulse(Pulse):
     """Half-sine pulse
 
     Parameters
-        ----------
-        num_samples : int
-            Number of samples in the pulse
+    ----------
+    num_samples : int
+        Number of samples in the pulse
+    nfft : int, optional
+        Number of FFT points to use when calculating frequency response. Default is 4096.
     """
 
-    def __init__(self, num_samples):
-        super().__init__(num_samples)
+    def __init__(self, num_samples: int, nfft: int=4096):
+        super().__init__(num_samples, nfft=nfft)
 
     def _generate_samples(self):
         return self._normalize_energy(
@@ -159,13 +166,15 @@ class CosineSquaredPulse(Pulse):
     """Cosine-squared pulse
 
     Parameters
-        ----------
-        num_samples : int
-            Number of samples in the pulse
+    ----------
+    num_samples : int
+        Number of samples in the pulse
+    nfft : int, optional
+        Number of FFT points to use when calculating frequency response. Default is 4096.
     """
 
-    def __init__(self, num_samples):
-        super().__init__(num_samples)
+    def __init__(self, num_samples: int, nfft: int=4096):
+        super().__init__(num_samples, nfft=nfft)
 
     def _generate_samples(self):
         # Time axis
@@ -182,13 +191,15 @@ class TrianglePulse(Pulse):
     """Triangular pulse
 
     Parameters
-        ----------
-        num_samples : int
-            Number of samples in the pulse
+    ----------
+    num_samples : int
+        Number of samples in the pulse
+    nfft : int, optional
+        Number of FFT points to use when calculating frequency response. Default is 4096.
     """
 
-    def __init__(self, num_samples):
-        super().__init__(num_samples)
+    def __init__(self, num_samples: int, nfft: int=4096):
+        super().__init__(num_samples, nfft=nfft)
 
     def _generate_samples(self):
         # Time axis
