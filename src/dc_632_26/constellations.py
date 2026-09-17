@@ -101,6 +101,9 @@ class Constellation:
 
     eta | energy_efficiency : float
         Energy efficiency (min_distance² / bit_energy).
+
+    N0 | N0 : float
+        Noise PSD    
     """
 
     def __init__(self, mod_input: np.ndarray | dict, dtype=np.complex128, normalize=False):
@@ -144,6 +147,39 @@ class Constellation:
         """
         return float(symbol_distance(self.mod_table[bit_pattern1], self.mod_table[bit_pattern2]))
 
+    @staticmethod
+    def Qfunction(x):
+        """
+        Q function
+        """
+        from scipy.special import erfc
+        return 0.5 * erfc(x / np.sqrt(2))
+
+    def avg_nearest_neighbor(self)-> float:
+        """
+        Calculate average number of nearest neighbors using symbol_distance
+        """
+
+        diff = symbol_distance(self.mod_table[:,np.newaxis],
+                               self.mod_table[np.newaxis, :])
+        np.fill_diagonal(diff, np.inf)
+        close = np.isclose(diff, self.dmin)
+        return float(close.sum(axis=1).mean())
+
+    def nearest_neighbor_approx(self, N0: float) -> float:
+        """
+        Compute the nearest neighbor approximation for Probability of Symbol error
+        for any given constellation based on the formula
+        Pr{e} = Nmin*Q(sqrt(np*Eb / 2*N0)) = Nmin*Q(sqrt(dmin^2 / 2*N0))
+
+        Nmin : average number of nearest neighbors
+        Eb   : average energy per bit
+        N0   : noise PSD
+        """
+        Nmin = self.avg_nearest_neighbor()
+        Qarg = np.sqrt(self.dmin**2 / (2 * N0))
+        return Nmin * self.Qfunction(Qarg)
+  
     def __getitem__(self, bit_pattern: int) -> complex:
         """Return constellation point for bit sequence index."""
         return complex(self.mod_table[bit_pattern])
