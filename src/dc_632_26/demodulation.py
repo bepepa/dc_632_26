@@ -1,7 +1,7 @@
 """Digital baseband demodulation and generic slicer.
 
-This file defines the :func:`demodulation` function, :class:`Slicer` abstract base class,
-and :class:`GenericSlicer` implementation for converting noisy received symbols back to bits.
+This file defines the demodulation function, Slicer abstract base class,
+GenericSlicer class implementation for converting noisy received symbols back to bits.
 
 The Slicer class: 
   - Abstract base class defining the interface for all slicer implementations
