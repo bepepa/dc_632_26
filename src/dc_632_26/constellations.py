@@ -23,15 +23,6 @@ standard_constellation.QAM16
 
 from types import SimpleNamespace
 import numpy as np
-# from helper import symbol_distance
-
-# ============================================================================
-# Helper Functions - TODO: Once integration is done, move to a helper.py
-# ============================================================================
-
-def symbol_distance(a, b):
-    """Compute distance between constellation symbols (works for scalars or arrays)."""
-    return np.abs(a - b)
 
 # ============================================================================
 # Standard Grey Coded Constellation Tables
@@ -132,11 +123,15 @@ class Constellation:
             constellation[idx] = sym
         return constellation
 
+    def _symbol_distance(self, a, b) -> float:
+        """Compute distance between constellation symbols (works for scalars or arrays)."""
+        return np.abs(a - b)
+
     def _compute_min_distance(self) -> float:
         """Compute minimum distance between constellation points.
         Uses broadcasting to create NxN matrix of all pairwise distances. 
         """
-        diff = symbol_distance(self.mod_table[:, np.newaxis], self.mod_table[np.newaxis, :])  # compute all pairwise distances
+        diff = self._symbol_distance(self.mod_table[:, np.newaxis], self.mod_table[np.newaxis, :])  # compute all pairwise distances
         np.fill_diagonal(diff, np.inf)  # Remove self-pair distance, which is 0
         return float(diff.min())  # return min dist
 
@@ -145,7 +140,7 @@ class Constellation:
         
         Parameters: bit_pattern1, bit_pattern2 - binary literals (0b00, 0b01) or integer indices
         """
-        return float(symbol_distance(self.mod_table[bit_pattern1], self.mod_table[bit_pattern2]))
+        return float(self._symbol_distance(self.mod_table[bit_pattern1], self.mod_table[bit_pattern2]))
 
     @staticmethod
     def Qfunction(x):
@@ -160,7 +155,7 @@ class Constellation:
         Calculate average number of nearest neighbors using symbol_distance
         """
 
-        diff = symbol_distance(self.mod_table[:,np.newaxis],
+        diff = self._symbol_distance(self.mod_table[:,np.newaxis],
                                self.mod_table[np.newaxis, :])
         np.fill_diagonal(diff, np.inf)
         close = np.isclose(diff, self.dmin)
