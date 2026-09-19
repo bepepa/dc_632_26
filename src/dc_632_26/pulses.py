@@ -203,3 +203,25 @@ class TrianglePulse(Pulse):
 
         # Normalizing to unit energy
         return self._normalize_energy(pulse)
+
+    def analytic_freq_response(self, T: float = 1.0) -> Tuple[np.ndarray, np.ndarray]:
+        """Optional method to return the analytic frequency response of the pulse.
+
+        Parameters
+        ----------
+        T : float
+            Duration of the pulse in seconds. Default is 1.0.
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray]
+            Frequencies and corresponding frequency response values
+            The frequency response is calculated analytically by the subclass, if implemented.
+        """
+        freqs = np.linspace(
+            -self.oversamp / (2 * T), self.oversamp / (2 * T), self.nfft
+        )
+
+        # Solved for an arbitrary symbol period T, over same frequency range
+        H = np.sqrt(3 * T) / 2 * np.sinc(freqs * T / 2) ** 2
+        return freqs, H
