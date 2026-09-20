@@ -195,9 +195,11 @@ class CosineSquaredPulse(Pulse):
         freqs = np.linspace(
                     -self.oversamp / (2 * T), self.oversamp / (2 * T), self.nfft
                 )
-        left_bound = self.nfft//2
-        right_bound = self.nfft-1
-        H = np.pi*sig.unit_impulse(freqs.size, idx=0) + (1/2)*np.pi*sig.unit_impulse(freqs.size, idx=left_bound) + (1/2)*np.pi*sig.unit_impulse(freqs.size, idx=right_bound)
+        H = (
+            T / 2 * np.sinc(freqs * T / 2)
+            + T / 4 * np.sinc((freqs - 2 * np.pi / T) * T / 2)
+            + T / 4 * np.sinc((freqs + 2 * np.pi / T) * T / 2)
+        )
         return freqs, H
 
 
