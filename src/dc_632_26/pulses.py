@@ -14,9 +14,9 @@ class Pulse(ABC):
         Number of FFT points to use when calculating frequency response. Default is 4096.
     """
 
-    def __init__(self, num_samples, nfft=4096):
+    def __init__(self, num_samples, oversamp=1, nfft=4096): #Added oversampling parameter, no oversampling by default
         self.num_samples = num_samples
-        self.oversamp = num_samples  ## FIX ME: needs to be separate from num_samples
+        self.oversamp = oversamp
         self.samples = self._generate_samples()
         self.nfft = nfft
 
@@ -203,3 +203,64 @@ class TrianglePulse(Pulse):
 
         # Normalizing to unit energy
         return self._normalize_energy(pulse)
+    
+class SqrtRaisedCosinePulse(Pulse):
+    """Square Root Raised Cosine (SRRC) pulse
+
+    Parameters
+        ----------
+        num_samples : int
+            Number of samples in the pulse
+        oversamp : int
+            Oversampling factor, i.e. number of samples per symbol
+        alpha : float
+            Roll-off factor. Must satisfy 0 <= alpha <= 1
+    """
+
+    def __init__(self, num_samples, oversamp=1, alpha=0.25):
+        if oversamp < 1:
+            raise ValueError('oversamp must be at least 1')
+            
+        if not 0 <= alpha <= 1:
+            raise ValueError('alpha must be between 0 and 1')
+            
+        self.alpha = alpha
+        
+        super().__init__(num_samples, oversamp=oversamp)
+
+    def _generate_samples(self):
+        """Generate the normalize the SRRC pulse"""
+        
+        # Defining the time axis using num_samples and oversamp
+        Ts = 1 / self.oversamp
+        
+        t = (np.arange(self.num_samples) - (self.num_samples - 1) / 2) * Ts
+        
+        # Roll-off factor alpha
+        alpha = self.alpha
+        
+        pulse = np.zeros_like(t, dtype=float)
+        
+        general = ((np.abs(t) > 1e-12) & (np.abs(np.abs(4 * alpha * t) - 1) > 1e-12))
+        
+        # Check for case alpha = 0
+        if alpha == 0:
+            pulse = np.sinc(t)
+        
+        # Define general case
+        else:
+            pulse[general] = (np.sin(np.pi * t[general] * (1 - alpha)) + 4 * alpha * t[general] 
+                              * np.cos(np.pi * t[general] * (1 + alpha))) / (np.pi * t[general]
+                              * (1 - (4 * alpha * t[general]) ** 2))                                                                       
+            
+            # Address troublesome time values
+            zero = np.abs(t) <= 1e-12
+            pulse[zero] = 1 - alpha + 4 * alpha / np.pi
+            
+            singular = (np.abs(np.abs(4 * alpha * t) - 1) <= 1e-12)
+            
+            pulse[singular] = (alpha / np.sqrt(2) * ((1 + 2 / np.pi) * np.sin(np.pi / (4 * alpha))
+                               + (1 - 2 / np.pi) * np.cos(np.pi / (4 * alpha))))
+        
+        # Normalize and return
+        return self.normalize_energy(pulse)
