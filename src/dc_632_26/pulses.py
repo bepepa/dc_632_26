@@ -1,6 +1,7 @@
 import numpy as np
+import scipy.signal as sig
 import matplotlib.pyplot as plt
-from typing import Tuple
+from typing import Any, Tuple
 from abc import ABC, abstractmethod
 
 
@@ -185,6 +186,30 @@ class CosineSquaredPulse(Pulse):
 
         # Normalizing to unit energy
         return self._normalize_energy(pulse)
+
+    def analytic_freq_response(self, T: float = 1) -> Tuple[np.ndarray[Tuple[Any, ...], np.dtype[Any]], np.ndarray[Tuple[Any, ...], np.dtype[Any]]]:
+        """Optional method to return the analytic frequency response of the pulse.
+        
+        Parameters
+        ----------
+        T : float
+            Duration of the pulse in seconds. Default is 1.0.
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray]
+            Frequencies and corresponding frequency response values
+            The frequency response is calculated analytically by the subclass, if implemented.
+        """
+        freqs = np.linspace(
+                    -self.oversamp / (2 * T), self.oversamp / (2 * T), self.nfft
+                )
+        H = (
+            T / 2 * np.sinc(freqs * T / 2)
+            + T / 4 * np.sinc((freqs - 2 * np.pi / T) * T / 2)
+            + T / 4 * np.sinc((freqs + 2 * np.pi / T) * T / 2)
+        )
+        return freqs, H
 
 
 class TrianglePulse(Pulse):
