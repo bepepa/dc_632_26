@@ -1,6 +1,6 @@
 """Digital modulation constellations and helper attributes.
 
-This file defines the :class:`Constellation` class and defines 4 standard constellation objects using this class. 
+This file defines the :class:`Constellation` class and defines 5 standard constellation objects using this class. 
 The constellation class wraps a constellation array as an object for attribute function calls. 
 
 The class accepts either:
@@ -57,6 +57,41 @@ QAM16_MAP = {
     0b1000:  3-3j, 0b1001:  3-1j, 0b1010:  3+3j, 0b1011:  3+1j,
     0b1100:  1-3j, 0b1101:  1-1j, 0b1110:  1+3j, 0b1111:  1+1j
 }
+
+
+def APSK_constellation(gamma = 3.15 , R1= 1.0):
+
+    #outer ring radius is scaled by gamma factor
+    R2 = R1 * gamma
+
+    APSK16_MAP = {
+    ###inner circle ring
+    0b1100: R1 * np.exp(1j * np.pi/4),
+    0b1110: R1 * np.exp(1j * 3*np.pi/4),
+    0b1111: R1 * np.exp(1j * 5*np.pi/4),
+    0b1101: R1 * np.exp(1j * 7*np.pi/4),
+
+    ###outer circle ring
+    0b0100: R2 * np.exp(1j * np.pi/12),
+    0b0000: R2 * np.exp(1j * np.pi/4),
+    0b1000: R2 * np.exp(1j * 5*np.pi/12),
+
+    0b1010: R2 * np.exp(1j * 7*np.pi/12),
+    0b0010: R2 * np.exp(1j * 3*np.pi/4),
+    0b0110: R2 * np.exp(1j * 11*np.pi/12),
+
+    0b0111: R2 * np.exp(1j * 13*np.pi/12),
+    0b0011: R2 * np.exp(1j * 5*np.pi/4),
+    0b1011: R2 * np.exp(1j * 17*np.pi/12),
+
+    0b1001: R2 * np.exp(1j * 19*np.pi/12),
+    0b0001: R2 * np.exp(1j * 7*np.pi/4),
+    0b0101: R2 * np.exp(1j * 23*np.pi/12)
+    }
+
+    return APSK16_MAP
+
+APSK16_MAP = APSK_constellation()
 
 class Constellation:    
     """Represent a digital modulation constellation.
@@ -187,10 +222,12 @@ standard_constellation = SimpleNamespace(
     BPSK=Constellation(BPSK_MAP,normalize=True),
     QPSK=Constellation(QPSK_MAP,normalize=True),
     PSK8=Constellation(PSK8_MAP,normalize=True),
-    QAM16=Constellation(QAM16_MAP,normalize=True)
+    QAM16=Constellation(QAM16_MAP,normalize=True),
+    APSK16=Constellation(APSK16_MAP, normalize=True)
 )
 # Allow legacy access
 BPSK=Constellation(BPSK_MAP,normalize=False)
 QPSK=Constellation(QPSK_MAP,normalize=False)
 PSK8=Constellation(PSK8_MAP,normalize=False)
 QAM16=Constellation(QAM16_MAP,normalize=False)
+APSK16 = Constellation(APSK16_MAP, normalize=False)
