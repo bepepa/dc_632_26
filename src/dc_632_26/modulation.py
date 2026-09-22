@@ -1,39 +1,72 @@
 import numpy as np
-from itertools import batched
+import numpy.typing as npt
+from dc_632_26.constellations import *
 
-def _bits_to_int(bits: np.ndarray):
-    counter = 0
-    sum = 0
-    for bit in bits[::-1]:
-        sum += bit*2**counter
-        counter += 1
-    return sum
+def bits_to_int( bits_N: npt.ArrayLike, bits_per_symbol: int ) -> np.ndarray:
+    """
+    Function that takes a list of bit represented by integers
+    and outputs an integer.
 
-def modulation(bits, constellation):
+    Notes on shapes:
+    Number of rows is number of bits per symbol. MSB is first(top) - B
+    Number of columns is number of symbols. - S
+
+    Parameters
+    ----------
+    bits_N : npt.ArrayLike
+        bitstring represented as zeros and ones.
+        Shaped to process multiple symbols at once.
+        N is the number of bits
+        
+    Returns
+    -------
+    np.ndarray
+        The bits converted to an integer
+    """
+
+    bits_N = np.asarray( bits_N )
+    bits_BS = np.reshape( bits_N, (bits_per_symbol, -1),order='F')
+    result_S = np.zeros( bits_BS.shape[-1], dtype='int')
+    # MSB to LSB
+    for bit in bits_BS:
+        result_S = result_S << 1
+        result_S += bit
+    return result_S
+
+def modulation( bits_N: np.ndarray, constellation_map_O: Constellation ) -> np.ndarray:
     """
     Function that takes bits and maps them according to the mapper.
     The bits are a numpy ndarray, the mapper is a function that should
-    take the bits two at a time and map them to a complex value.
+    take the bits bits_per_symbol at a time and map them to a complex value.
 
-    It returns a complex array.
+    Notes on shapes:
+    S is the number of symbols
 
-    TODO: be able to take varying bits per symbol.
-    Include support functions for Eb, Es, Bps, eta(energy efficiency)
-    Split this out into a function for the constellation and a function
-    to actually map bits to symbols given a constellation
+
+    Parameters
+    ----------
+    bits_N : np.ndarray
+        bitstring represented as zeros and ones
+        N is the number of bits, it can change slightly
+        if we pad out the sequence.
+    constellation_map_O : Constellation
+        Class containing the mapping between values of the bits, as indices,
+        and the actual complex value of the symbol sequence at
+        that point.
+        O is the modulation order.
+
+    Returns
+    -------
+    np.ndarray
+        The complex symbols corresponding to the given
+        bitstring
     """
 
-    num_bits_to_take = int(np.log2(len(constellation)))
-    remainder = bits.size % num_bits_to_take
+    bits_per_symbol = constellation_map_O.bps
+    remainder = bits_N.size % bits_per_symbol
     if remainder != 0:
-        padding = num_bits_to_take - remainder
-        bits = np.append(bits, [0]*padding).astype('int')
-    # padded_bits = np.append(bits, [0,0]) if bits.size % 2 == 0 else np.append(bits,[0,0,1])
-    symbols = np.empty(bits.size//num_bits_to_take, dtype=np.complex128)
-    for idx, bit_seq in enumerate(batched(bits, num_bits_to_take)):
-       symbols[idx] = constellation[_bits_to_int(bit_seq)]
-    # groups = [bits[i:i + num_bits_to_take] for i in range(0, len(bits), num_bits_to_take)]
-    # symbols = np.array([constellation[_bits_to_int(group)] for group in groups], dtype=np.complex128)
+        padding = bits_per_symbol - remainder
+        bits_N = np.append(bits_N, np.zeros(padding, dtype=bits_N.dtype))
+    symbols_S = constellation_map_O()[ bits_to_int( bits_N, bits_per_symbol ) ]
 
-    return symbols
-
+    return symbols_S
