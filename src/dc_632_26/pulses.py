@@ -16,7 +16,7 @@ class Pulse(ABC):
         Number of FFT points to use when calculating frequency response. Default is 1024.
     """
 
-    def __init__(self, num_samples: int, oversamp: int=None, nfft: int=4096):
+    def __init__(self, num_samples: int, oversamp: int=None, nfft: int=1024):
         self.num_samples = num_samples
         if oversamp is None:
             self.oversamp = num_samples 
@@ -53,7 +53,7 @@ class Pulse(ABC):
         Parameters
         ----------
         T : float
-            Duration of the pulse in seconds. Default is 1.0.
+            Duration of the symbol in seconds. Default is 1.0.
 
         Returns
         -------
@@ -74,7 +74,7 @@ class Pulse(ABC):
                 Parameters
                 ----------       
                 T : float
-                    Duration of the pulse in seconds. Default is 1.0 and frequency axis is
+                    Duration of the symbol in seconds. Default is 1.0 and frequency axis is
                     Normalized frequency(1/T) or Multiples of Symbol rate
             
                     If specific time is passed, the frequency axis is Frequency Hz and spans
@@ -90,7 +90,7 @@ class Pulse(ABC):
                 
                 Notes
                 -----
-                Implemented by subclass.
+                
                 The frequency response is scaled by np.sqrt(self.num_samples) because 
                 the time-domain samples have been normalized to unit energy. This scaling 
                 ensures that the numerical DFT magnitude matches the continuous analytic 
@@ -98,8 +98,8 @@ class Pulse(ABC):
                 """
 
         # This line sets a value for nfft if none has been specified.
-        N_points = getattr(self, 'nfft', None) or max(len(self.samples), 1024)
-        print(f"T=",T)
+        N_points = self.nfft
+        
         #Derive sampling frequency and axis vector
         if T==1:
             fs=self.oversamp
@@ -133,7 +133,7 @@ class Pulse(ABC):
         #Get numerical frequency response
         # Note to compare against current analytical freq response, calling with default T=1 
         # and using normalized frequency 1/T x axis
-        print(f"T=",T)
+       
         if T==1:
             H_numerical_freqs, H =self.numerical_freq_response()
             plt.plot(H_numerical_freqs, np.abs(H), label="DFT")
@@ -144,19 +144,14 @@ class Pulse(ABC):
                 plt.legend()
             except NotImplementedError:
                 pass
-            plt.title("Pulse Frequency Response")
-            plt.xlabel("Normalized Frequency (1/T)") 
-            plt.ylabel("|H(f)|")
-            plt.grid(True)
-            plt.show()
         else:
             H_numerical_freqs, H =self.numerical_freq_response(T=T)
             plt.plot(H_numerical_freqs, np.abs(H), label="DFT")
-            plt.title("Pulse Frequency Response")
-            plt.xlabel("Frequency (Hz)") 
-            plt.ylabel("|H(f)|")
-            plt.grid(True)
-            plt.show()
+        plt.title("Pulse Frequency Response")
+        plt.xlabel("Frequency (Hz)") 
+        plt.ylabel("|H(f)|")
+        plt.grid(True)
+        plt.show()
 
 
 class RectangularPulse(Pulse):

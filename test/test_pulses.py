@@ -59,6 +59,11 @@ def test_pulse_class():
     # Assert the peak DC magnitude matches perfectly at 0 Hz
         np.testing.assert_almost_equal(np.max(np.abs(H_norm)), np.max(np.abs(H_an_norm)), decimal=6)
 
+    # Assert the whole frequency response array matches closely
+    # rtol=1e-5 means they must match within 0.001% of each other relative to the magnitude
+    # atol=1e-6 catches values near zero so tiny floating-point noise doesn't trigger a failure
+        np.testing.assert_allclose(np.abs(H_norm), np.abs(H_an_norm), rtol=1e-5, atol=1e-6)
+
     # 2. Test : True Physical Frequency Scaling
         freqs_phys, H_phys = pulse.numerical_freq_response(T=T_val)
     
