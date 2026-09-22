@@ -161,6 +161,24 @@ class HalfSinePulse(Pulse):
             np.sin(np.pi * np.linspace(0.0, 1.0, self.num_samples, endpoint=False))
         )
 
+    def analytic_freq_response(self, T: float = 1.0) -> Tuple[np.ndarray, np.ndarray]:
+        """Return the analytic frequency response of the half-sine pulse.
+
+        Parameters
+        ----------
+        T : float
+            Duration of the pulse in seconds. Default is 1.0.
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray]
+            Frequencies and corresponding frequency response values.
+        """
+        freqs = np.linspace(-self.oversamp / (2 * T), self.oversamp / (2 * T), self.nfft)
+
+        H = np.sqrt(2 * T) / 2 * (np.sinc(freqs * T - 0.5) + np.sinc(freqs * T + 0.5))
+
+        return freqs, H
 
 class CosineSquaredPulse(Pulse):
     """Cosine-squared pulse
