@@ -114,7 +114,7 @@ class Pulse(ABC):
         # The scaling below is because the energy of the samples has been normalized to one, 
         # but as in HW 2, problem 3, part d, the discrete time approximation of the energy is fs. 
         #So to make the DFT, match the analytic freq response, we scale as below.
-        freq_resp = np.fft.fftshift(np.fft.fft(self.samples, n=N_points))/ np.sqrt(fs)
+        freq_resp = np.fft.fftshift(np.fft.fft(self.samples, n=N_points))
     
         return freq_axis, freq_resp
        
