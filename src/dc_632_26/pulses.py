@@ -13,10 +13,10 @@ class Pulse(ABC):
     oversamp : int, optional
         Oversampling rate (samples per symbol period). Defaults to num_samples (full-response pulse).
     nfft : int, optional
-        Number of FFT points to use when calculating frequency response. Default is 4096.
+        Number of FFT points to use when calculating frequency response. Default is 1024.
     """
 
-    def __init__(self, num_samples: int, oversamp: int=None, nfft: int=4096):
+    def __init__(self, num_samples: int, oversamp: int=None, nfft: int=1024):
         self.num_samples = num_samples
         if oversamp is None:
             self.oversamp = num_samples 
@@ -53,7 +53,7 @@ class Pulse(ABC):
         Parameters
         ----------
         T : float
-            Duration of the pulse in seconds. Default is 1.0.
+            Duration of the symbol in seconds. Default is 1.0.
 
         Returns
         -------
@@ -66,17 +66,66 @@ class Pulse(ABC):
         """
         raise NotImplementedError("Not yet implemented by subclass")
 
-    def freq_response(self) -> np.ndarray:
+    def numerical_freq_response(
+        self, 
+        T: float = 1.0
+        ) -> Tuple[np.ndarray, np.ndarray]:
         """Calculate the frequency response of the pulse via Discrete Fourier Transform
+                Parameters
+                ----------       
+                T : float
+                    Duration of the symbol in seconds. Default is 1.0 and frequency axis is
+                    Normalized frequency(1/T) or Multiples of Symbol rate
+            
+                    If specific time is passed, the frequency axis is Frequency Hz and spans
+                    -fs/2 to fs/2 
+        
+                Returns
+                -------
+                Tuple[np.ndarray, np.ndarray]
+                    freq_axis : np.ndarray
+                        Frequency vector ranging from -fs/2 to fs/2 
+                    freq_resp : np.ndarray
+                        The centered, complex discrete frequency response (FFT shifted).
+                
+                Notes
+                -----
+                
+                The frequency response is scaled by np.sqrt(self.num_samples) because 
+                the time-domain samples have been normalized to unit energy. This scaling 
+                ensures that the numerical DFT magnitude matches the continuous analytic 
+                frequency response peak.
+                """
 
-        Returns
-        -------
-        np.ndarray
-            Discrete Fourier Transform of the pulse
-        """
-        return np.fft.fft(self.samples, n=self.nfft)
+        # This line sets a value for nfft if none has been specified.
+        N_points = self.nfft
+        
+        #Derive sampling frequency and axis vector
+        # if T==1:
+        #     fs=self.oversamp
+        #     freq_axis =np.linspace(
+        #      -self.num_samples / (2 * T), self.num_samples / (2 * T), N_points
+        #     )
+        # else:
+        #     fs = self.oversamp / T
+        #     freq_axis = np.fft.fftshift(np.fft.fftfreq(N_points, d=1/fs))
 
-    def plot_freq_response(self, fs: float):
+        fs = self.oversamp / T
+        freq_axis = np.fft.fftshift(np.fft.fftfreq(N_points, d=1/fs))
+        
+
+        
+
+        # Compute the numerical frequency response
+        # The scaling below is because the energy of the samples has been normalized to one, 
+        # but as in HW 2, problem 3, part d, the discrete time approximation of the energy is fs. 
+        #So to make the DFT, match the analytic freq response, we scale as below.
+        freq_resp = np.fft.fftshift(np.fft.fft(self.samples, n=N_points))/np.sqrt(fs)
+    
+        return freq_axis, freq_resp
+       
+
+    def plot_freq_response(self, fs: float, T:float=1.0):
         """Creates a plot of the pulse's frequency response (magnitude only)
 
         Plots the DFT of the pulse, as well as the analytic frequency response if defined.
@@ -86,21 +135,26 @@ class Pulse(ABC):
         fs : float
             Sampling frequency
         """
-        # Get frequency response
-        H = np.fft.fftshift(self.freq_response())
-        # Frequency axis in Hz
-        freqs = np.fft.fftshift(np.fft.fftfreq(self.nfft, d=1 / fs))
+        
+        #Get numerical frequency response
+        # Note to compare against current analytical freq response, calling with default T=1 
+        # and using normalized frequency 1/T x axis
+       
+        if T==1:
+            H_numerical_freqs, H =self.numerical_freq_response()
+            plt.plot(H_numerical_freqs, np.abs(H), label="DFT")
 
-        # Plot magnitude
-        plt.plot(freqs, np.abs(H), label="DFT")
-        try:  # Plot the analytic response, if available
-            H_analytic_freqs, H_analytic = self.analytic_freq_response()
-            plt.plot(H_analytic_freqs, np.abs(H_analytic), label="Analytic")
-            plt.legend()
-        except NotImplementedError:
-            pass
+            try:  # Plot the analytic response, if available
+                H_analytic_freqs, H_analytic = self.analytic_freq_response()
+                plt.plot(H_analytic_freqs, np.abs(H_analytic), '--',label="Analytic")
+                plt.legend()
+            except NotImplementedError:
+                pass
+        else:
+            H_numerical_freqs, H =self.numerical_freq_response(T=T)
+            plt.plot(H_numerical_freqs, np.abs(H), label="DFT")
         plt.title("Pulse Frequency Response")
-        plt.xlabel("Frequency (Hz)")
+        plt.xlabel("Frequency (Hz)") 
         plt.ylabel("|H(f)|")
         plt.grid(True)
         plt.show()
@@ -121,7 +175,7 @@ class RectangularPulse(Pulse):
         samples = np.ones(self.num_samples)
         return self._normalize_energy(samples)
 
-    def analytic_freq_response(self, T: float = 1.0) -> Tuple[np.ndarray, np.ndarray]:
+    def analytic_freq_response(self, T: float = 1) -> Tuple[np.ndarray, np.ndarray]:
         """Optional method to return the analytic frequency response of the pulse.
 
         Parameters
