@@ -101,14 +101,20 @@ class Pulse(ABC):
         N_points = self.nfft
         
         #Derive sampling frequency and axis vector
-        if T==1:
-            fs=self.oversamp
-            freq_axis =np.linspace(
-             -self.num_samples / (2 * T), self.num_samples / (2 * T), N_points
-            )
-        else:
-            fs = self.oversamp / T
-            freq_axis = np.fft.fftshift(np.fft.fftfreq(N_points, d=1/fs))
+        # if T==1:
+        #     fs=self.oversamp
+        #     freq_axis =np.linspace(
+        #      -self.num_samples / (2 * T), self.num_samples / (2 * T), N_points
+        #     )
+        # else:
+        #     fs = self.oversamp / T
+        #     freq_axis = np.fft.fftshift(np.fft.fftfreq(N_points, d=1/fs))
+
+        fs = self.oversamp / T
+        freq_axis = np.fft.fftshift(np.fft.fftfreq(N_points, d=1/fs))
+        
+
+        
 
         # Compute the numerical frequency response
         # The scaling below is because the energy of the samples has been normalized to one, 
@@ -119,7 +125,7 @@ class Pulse(ABC):
         return freq_axis, freq_resp
        
 
-    def plot_freq_response(self, fs: float,T: float = 1.0):
+    def plot_freq_response(self, fs: float, T:float=1.0):
         """Creates a plot of the pulse's frequency response (magnitude only)
 
         Plots the DFT of the pulse, as well as the analytic frequency response if defined.
