@@ -14,7 +14,7 @@ Note, direct imports of constellations example: constellations.BPSK is legacy us
 import numpy as np
 import pytest
 
-from dc_632_26.constellations import BPSK, PSK8, QAM16, QPSK # legacy imports
+from dc_632_26.constellations import BPSK, PSK8, QAM16, QPSK, APSK16 , APSK_constellation   # legacy imports
 from dc_632_26.constellations import standard_constellation, Constellation
 
 class TestGetItem:
@@ -30,7 +30,11 @@ class TestGetItem:
         # QPSK is normalized, so divided by sqrt(2)
         assert standard_constellation.QPSK[0] == pytest.approx(1/np.sqrt(2) + 1j/np.sqrt(2))
         assert standard_constellation.QPSK[3] == pytest.approx(-1/np.sqrt(2) - 1j/np.sqrt(2))
-        
+
+
+###defining R1 and R2 for APSK16 tests
+R1 = 1.0
+R2 = R1 * 3.15  # outer ring radius scaled by gamma factor       
 @pytest.mark.parametrize(
     "constellation, expected_points",
     [
@@ -78,6 +82,57 @@ class TestGetItem:
                 1 + 1j,
             ],
         ),
+
+        (APSK16,[    
+                # 0000
+                R2 * np.exp(1j * np.pi / 4),
+
+                # 0001
+                R2 * np.exp(1j * 7 * np.pi / 4),
+
+                # 0010
+                R2 * np.exp(1j * 3 * np.pi / 4),
+
+                # 0011
+                R2 * np.exp(1j * 5 * np.pi / 4),
+
+                # 0100
+                R2 * np.exp(1j * np.pi / 12),
+
+                # 0101
+                R2 * np.exp(1j * 23 * np.pi / 12),
+
+                # 0110
+                R2 * np.exp(1j * 11 * np.pi / 12),
+
+                # 0111
+                R2 * np.exp(1j * 13 * np.pi / 12),
+
+                # 1000
+                R2 * np.exp(1j * 5 * np.pi / 12),
+
+                # 1001
+                R2 * np.exp(1j * 19 * np.pi / 12),
+
+                # 1010
+                R2 * np.exp(1j * 7 * np.pi / 12),
+
+                # 1011
+                R2 * np.exp(1j * 17 * np.pi / 12),
+
+                # 1100
+                R1 * np.exp(1j * np.pi / 4),
+
+                # 1101
+                R1 * np.exp(1j * 7 * np.pi / 4),
+
+                # 1110
+                R1 * np.exp(1j * 3 * np.pi / 4),
+
+                # 1111
+                R1 * np.exp(1j * 5 * np.pi / 4),
+        ]
+         ),
     ],
 )
 
@@ -97,6 +152,7 @@ class TestLegacyGetItem:
         (standard_constellation.QPSK, 2),
         (standard_constellation.PSK8, 3),
         (standard_constellation.QAM16, 4),
+        (standard_constellation.APSK16, 4)
     ],
 )
 
@@ -115,10 +171,12 @@ class TestNumberOfBitsPerSymbol:
         (standard_constellation.QPSK, 1.0),
         (standard_constellation.PSK8, 1.0),
         (standard_constellation.QAM16, 1.0),
+        (standard_constellation.APSK16, 1.0),
         (BPSK, 1),
         (QPSK, 2),
         (PSK8, 1),
         (QAM16, 10),
+        (APSK16, (4 * R1**2 + 12 * R2**2) / 16),
     ],
 )
 class TestSymbolEnergy:
@@ -136,6 +194,7 @@ class TestSymbolEnergy:
         (standard_constellation.QPSK, 0.5),
         (standard_constellation.PSK8, 1.0/3),
         (standard_constellation.QAM16, 0.25),
+        (standard_constellation.APSK16, 0.25),
     ],
 )
 class TestBitEnergy:
