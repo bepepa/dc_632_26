@@ -215,6 +215,24 @@ class HalfSinePulse(Pulse):
             np.sin(np.pi * np.linspace(0.0, 1.0, self.num_samples, endpoint=False))
         )
 
+    def analytic_freq_response(self, T: float = 1.0) -> Tuple[np.ndarray, np.ndarray]:
+        """Return the analytic frequency response of the half-sine pulse.
+
+        Parameters
+        ----------
+        T : float
+            Duration of the pulse in seconds. Default is 1.0.
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray]
+            Frequencies and corresponding frequency response values.
+        """
+        freqs = np.linspace(-self.oversamp / (2 * T), self.oversamp / (2 * T), self.nfft)
+
+        H = np.sqrt(2 * T) / 2 * (np.sinc(freqs * T - 0.5) + np.sinc(freqs * T + 0.5))
+
+        return freqs, H
 
 class CosineSquaredPulse(Pulse):
     """Cosine-squared pulse
@@ -268,3 +286,86 @@ class TrianglePulse(Pulse):
 
         # Normalizing to unit energy
         return self._normalize_energy(pulse)
+
+    def analytic_freq_response(self, T: float = 1.0) -> Tuple[np.ndarray, np.ndarray]:
+        """Optional method to return the analytic frequency response of the pulse.
+
+        Parameters
+        ----------
+        T : float
+            Duration of the pulse in seconds. Default is 1.0.
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray]
+            Frequencies and corresponding frequency response values
+            The frequency response is calculated analytically by the subclass, if implemented.
+        """
+        freqs = np.linspace(
+            -self.oversamp / (2 * T), self.oversamp / (2 * T), self.nfft
+        )
+
+        # Solved for an arbitrary symbol period T, over same frequency range
+        H = np.sqrt(3 * T) / 2 * np.sinc(freqs * T / 2) ** 2
+        return freqs, H
+    
+class SqrtRaisedCosinePulse(Pulse):
+    """Square Root Raised Cosine (SRRC) pulse
+
+    Parameters
+        ----------
+        num_samples : int
+            Number of samples in the pulse
+        oversamp : int
+            Oversampling factor, i.e. number of samples per symbol
+        alpha : float
+            Roll-off factor. Must satisfy 0 <= alpha <= 1
+    """
+
+    def __init__(self, num_samples, oversamp=1, alpha=0.25):
+        if oversamp < 1:
+            raise ValueError('oversamp must be at least 1')
+            
+        if not 0 <= alpha <= 1:
+            raise ValueError('alpha must be between 0 and 1')
+            
+        self.alpha = alpha
+        
+        super().__init__(num_samples, oversamp=oversamp)
+
+    def _generate_samples(self):
+        """Generate the normalize the SRRC pulse"""
+        
+        # Defining the time axis using num_samples and oversamp
+        Ts = 1 / self.oversamp
+        
+        t = (np.arange(self.num_samples) - (self.num_samples - 1) / 2) * Ts
+        
+        # Roll-off factor alpha
+        alpha = self.alpha
+        
+        pulse = np.zeros_like(t, dtype=float)
+        
+        general = ((np.abs(t) > 1e-12) & (np.abs(np.abs(4 * alpha * t) - 1) > 1e-12))
+        
+        # Check for case alpha = 0
+        if alpha == 0:
+            pulse = np.sinc(t)
+        
+        # Define general case
+        else:
+            pulse[general] = (np.sin(np.pi * t[general] * (1 - alpha)) + 4 * alpha * t[general] 
+                              * np.cos(np.pi * t[general] * (1 + alpha))) / (np.pi * t[general]
+                              * (1 - (4 * alpha * t[general]) ** 2))                                                                       
+            
+            # Address troublesome time values
+            zero = np.abs(t) <= 1e-12
+            pulse[zero] = 1 - alpha + 4 * alpha / np.pi
+            
+            singular = (np.abs(np.abs(4 * alpha * t) - 1) <= 1e-12)
+            
+            pulse[singular] = (alpha / np.sqrt(2) * ((1 + 2 / np.pi) * np.sin(np.pi / (4 * alpha))
+                               + (1 - 2 / np.pi) * np.cos(np.pi / (4 * alpha))))
+        
+        # Normalize and return
+        return self.normalize_energy(pulse)
