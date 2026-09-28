@@ -48,6 +48,9 @@ class Pulse(ABC):
         energy = np.sum(samples**2)
         return samples / np.sqrt(energy)
 
+    def _sampling_frequency(self, T: float = 1.0) -> int:
+        return self.oversamp / T
+
     def _freq_axis(self, T: float = 1.0) -> np.ndarray:
         """Generate the frequency axis for the pulse.
 
@@ -61,7 +64,7 @@ class Pulse(ABC):
         np.ndarray
             Frequency axis ranging from -fs/2 to fs/2
         """
-        fs = self.oversamp / T
+        fs = self._sampling_frequency(T)
         return np.fft.fftshift(np.fft.fftfreq(self.nfft, d=1 / fs))
 
     def analytic_freq_response(self, T: float = 1.0) -> Tuple[np.ndarray, np.ndarray]:
@@ -126,6 +129,7 @@ class Pulse(ABC):
 
         freq_axis = self._freq_axis(T)
 
+        fs = self._sampling_frequency(T)
         # Compute the numerical frequency response
         # The scaling below is because the energy of the samples has been normalized to one,
         # but as in HW 2, problem 3, part d, the discrete time approximation of the energy is fs.
