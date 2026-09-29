@@ -1,19 +1,19 @@
 import numpy as np
+from dc_632_26.pulses import Pulse
 
 
 class PulseShaper:
-    """Class that generates a sampled waveform given pulse shape, oversampling factor, and input symbols.
+    """Class that generates a sampled waveform given pulse shape and input symbols.
 
-    Parameters
-    ----------
-    pulse : function
-        Function that takes as an argument the number of points to return.
-    oversamp : float
-        Number of samples per symbol (sample rate divided by symbol rate)
-    """
-
-    def __init__(self, pulse, oversamp: float) -> np.ndarray:
-        self.pulse = pulse(oversamp)
+        Parameters
+        ----------
+        pulse : Pulse
+            Pulse object
+        oversamp : int 
+            Sampling frequency divided by symbol rate = samples per symbol
+    """ 
+    def __init__(self, pulse: Pulse, oversamp: int):
+        self.pulse = pulse
         self.oversamp = oversamp
 
     def generate_waveform(self, symbols: np.ndarray) -> np.ndarray:
@@ -34,11 +34,10 @@ class PulseShaper:
         >>> waveform = pulse_shaper.generate_waveform(symbols)
         """
         # Space the symbols out by the oversamp factor
-        waveform_len = len(symbols) * self.oversamp
-        spaced_symbols = np.zeros(waveform_len, dtype=complex)
-        spaced_symbols[:: self.oversamp] = symbols
+        waveform_len = (len(symbols)-1)*self.oversamp + 1
+        spaced_symbols = np.zeros(waveform_len, dtype=complex) 
+        spaced_symbols[::self.oversamp] = symbols
 
         # Convolve with pulse to get waveform
-        waveform = np.convolve(spaced_symbols, self.pulse)
-        waveform = waveform[:waveform_len]
+        waveform = np.convolve(spaced_symbols, self.pulse.samples)
         return waveform
