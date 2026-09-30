@@ -73,6 +73,7 @@ def test_pulse_class():
     # Assert boundaries span exactly -fs/2 to +fs/2
         assert np.min(freqs_phys) == -fs / 2
         assert np.max(freqs_phys) == fs / 2
+
 def test_triangle_pulse():
     """
     Unit test to confirm:
@@ -115,10 +116,7 @@ def test_triangle_pulse():
     freqs_T_DFT, H_T_DFT = triangle_pulse.analytic_freq_response(T_DFT)
     dc_index_dft = np.argmin(np.abs(freqs_T_DFT))
 
-    H_DFT = np.fft.fftshift(triangle_pulse.freq_response())
-    dft_freqs = np.fft.fftshift(
-        np.fft.fftfreq(triangle_pulse.nfft, d=T_DFT / triangle_pulse.oversamp)
-    )
+    dft_freqs, H_DFT = triangle_pulse.numerical_freq_response(T_DFT)
     dft_dc_index = np.argmin(np.abs(dft_freqs))
     assert np.abs(H_DFT[dft_dc_index]) == pytest.approx(H_T_DFT[dc_index_dft], rel=0.05)
 
