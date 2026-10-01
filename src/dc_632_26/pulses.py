@@ -138,7 +138,7 @@ class Pulse(ABC):
 
         return freq_axis, freq_resp
 
-    def plot_freq_response(self, fs: float, T: float = 1.0):
+    def plot_freq_response(self, T: float = 1.0):
         """Creates a plot of the pulse's frequency response (magnitude only)
 
         Plots the DFT of the pulse, as well as the analytic frequency response if defined.
