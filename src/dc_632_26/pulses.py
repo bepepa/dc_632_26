@@ -161,13 +161,15 @@ class Pulse(ABC):
                 H_analytic_freqs, H_analytic = self.analytic_freq_response()
                 plt.plot(H_analytic_freqs, np.abs(H_analytic), "--", label="Analytic")
                 plt.legend()
+                plt.xlabel("Frequency (1/T)")
             except NotImplementedError:
                 pass
         else:
             H_numerical_freqs, H = self.numerical_freq_response(T=T)
             plt.plot(H_numerical_freqs, np.abs(H), label="DFT")
+            plt.xlabel("Frequency (Hz)")
+
         plt.title("Pulse Frequency Response")
-        plt.xlabel("Frequency (Hz)")
         plt.ylabel("|H(f)|")
         plt.grid(True)
         plt.show()
