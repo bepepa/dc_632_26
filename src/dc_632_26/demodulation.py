@@ -27,6 +27,7 @@ Example
 import numpy as np
 import numpy.typing as npt
 from abc import ABC, abstractmethod
+from utils import int_to_bits
 
 from dc_632_26.constellations import Constellation
 
@@ -54,35 +55,12 @@ class GenericSlicer(Slicer):
         self.bits_per_symbol = self.constellation.bps
 
     def slice_symbols(self, noisy_symbols: np.ndarray) -> np.ndarray:
-        """Map noisy symbols to nearest constellation points using minimum distance."""
+        """Map noisy symbols to nearest constellation points using minimum distance. Return bits"""
 
         noisy_symbols_reshaped = noisy_symbols[:, np.newaxis]                   # Apply broadcasting: (N,1) - (M,) → (N,M) 
         distances = np.abs(noisy_symbols_reshaped - self.decision_map_symbols)  # compute all pairwise distances
-        return np.argmin(distances, axis=1)                                     # Return index, 'm', of nearest constellation point
+        symbol_indices = np.argmin(distances, axis=1)                           # Return index, 'm', of nearest constellation point
 
-def int_to_bits(int_N: npt.ArrayLike, bit_len: int) -> np.ndarray:
-    """Convert array of integers to array of bits with specified bit-length"""
+        bits_N = int_to_bits(symbol_indices, self.bits_per_symbol)
+        return bits_N 
 
-    bit_positions = np.arange(bit_len - 1, -1, -1)    # MSB to LSB: [bit_len-1, ..., 0]
-    int_reshaped = int_N[:, None]                     # Reshape for broadcasting over all integers
-    bits_array = (int_reshaped >> bit_positions) & 1  # Extract bit at each position for each integer
-    return bits_array.ravel()                         # Flatten to 1D bitstream
-
-def demodulation(noisy_symbols: np.ndarray, slicer: Slicer) -> np.ndarray:
-    """Demodulate noisy symbols to bits using a slicer.
-    
-    Parameters
-    ----------
-    noisy_symbols : np.ndarray
-        Array of noisy complex symbols
-    slicer : Slicer
-        Slicer object containing constellation and decision strategy
-        
-    Returns
-    -------
-    np.ndarray
-        Array of demodulated bits
-    """
-    symbol_indices = slicer.slice_symbols(noisy_symbols)
-    bits_N = int_to_bits(symbol_indices, slicer.bits_per_symbol)
-    return bits_N
