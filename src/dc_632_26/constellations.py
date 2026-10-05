@@ -1,6 +1,6 @@
 """Digital modulation constellations and helper attributes.
 
-This file defines the :class:`Constellation` class and defines 4 standard constellation objects using this class. 
+This file defines the :class:`Constellation` class and defines 5 standard constellation objects using this class. 
 The constellation class wraps a constellation array as an object for attribute function calls. 
 
 The class accepts either:
@@ -23,15 +23,7 @@ standard_constellation.QAM16
 
 from types import SimpleNamespace
 import numpy as np
-# from helper import symbol_distance
-
-# ============================================================================
-# Helper Functions - TODO: Once integration is done, move to a helper.py
-# ============================================================================
-
-def symbol_distance(a, b):
-    """Compute distance between constellation symbols (works for scalars or arrays)."""
-    return np.abs(a - b)
+from dc_632_26.utils import Qfunction
 
 # ============================================================================
 # Standard Grey Coded Constellation Tables
@@ -67,6 +59,41 @@ QAM16_MAP = {
     0b1100:  1-3j, 0b1101:  1-1j, 0b1110:  1+3j, 0b1111:  1+1j
 }
 
+
+def APSK_constellation(gamma = 3.15 , R1= 1.0):
+
+    #outer ring radius is scaled by gamma factor
+    R2 = R1 * gamma
+
+    APSK16_MAP = {
+    ###inner circle ring
+    0b1100: R1 * np.exp(1j * np.pi/4),
+    0b1110: R1 * np.exp(1j * 3*np.pi/4),
+    0b1111: R1 * np.exp(1j * 5*np.pi/4),
+    0b1101: R1 * np.exp(1j * 7*np.pi/4),
+
+    ###outer circle ring
+    0b0100: R2 * np.exp(1j * np.pi/12),
+    0b0000: R2 * np.exp(1j * np.pi/4),
+    0b1000: R2 * np.exp(1j * 5*np.pi/12),
+
+    0b1010: R2 * np.exp(1j * 7*np.pi/12),
+    0b0010: R2 * np.exp(1j * 3*np.pi/4),
+    0b0110: R2 * np.exp(1j * 11*np.pi/12),
+
+    0b0111: R2 * np.exp(1j * 13*np.pi/12),
+    0b0011: R2 * np.exp(1j * 5*np.pi/4),
+    0b1011: R2 * np.exp(1j * 17*np.pi/12),
+
+    0b1001: R2 * np.exp(1j * 19*np.pi/12),
+    0b0001: R2 * np.exp(1j * 7*np.pi/4),
+    0b0101: R2 * np.exp(1j * 23*np.pi/12)
+    }
+
+    return APSK16_MAP
+
+APSK16_MAP = APSK_constellation()
+
 class Constellation:    
     """Represent a digital modulation constellation.
 
@@ -101,6 +128,9 @@ class Constellation:
 
     eta | energy_efficiency : float
         Energy efficiency (min_distance² / bit_energy).
+
+    N0 | N0 : float
+        Noise PSD    
     """
 
     def __init__(self, mod_input: np.ndarray | dict, dtype=np.complex128, normalize=False):
@@ -129,11 +159,15 @@ class Constellation:
             constellation[idx] = sym
         return constellation
 
+    def _symbol_distance(self, a, b) -> float:
+        """Compute distance between constellation symbols (works for scalars or arrays)."""
+        return np.abs(a - b)
+
     def _compute_min_distance(self) -> float:
         """Compute minimum distance between constellation points.
         Uses broadcasting to create NxN matrix of all pairwise distances. 
         """
-        diff = symbol_distance(self.mod_table[:, np.newaxis], self.mod_table[np.newaxis, :])  # compute all pairwise distances
+        diff = self._symbol_distance(self.mod_table[:, np.newaxis], self.mod_table[np.newaxis, :])  # compute all pairwise distances
         np.fill_diagonal(diff, np.inf)  # Remove self-pair distance, which is 0
         return float(diff.min())  # return min dist
 
@@ -142,8 +176,33 @@ class Constellation:
         
         Parameters: bit_pattern1, bit_pattern2 - binary literals (0b00, 0b01) or integer indices
         """
-        return float(symbol_distance(self.mod_table[bit_pattern1], self.mod_table[bit_pattern2]))
+        return float(self._symbol_distance(self.mod_table[bit_pattern1], self.mod_table[bit_pattern2]))
 
+    def avg_nearest_neighbor(self)-> float:
+        """
+        Calculate average number of nearest neighbors using symbol_distance
+        """
+
+        diff = symbol_distance(self.mod_table[:,np.newaxis],
+                               self.mod_table[np.newaxis, :])
+        np.fill_diagonal(diff, np.inf)
+        close = np.isclose(diff, self.dmin)
+        return float(close.sum(axis=1).mean())
+
+    def nearest_neighbor_approx(self, EbN0: float) -> float:
+        """
+        Compute the nearest neighbor approximation for Probability of Symbol error
+        for any given constellation based on the formula
+        Pr{e} = Nmin*Q(sqrt(np*Eb / 2*N0)) = Nmin*Q(sqrt(dmin^2 / 2*N0))
+
+        Nmin : average number of nearest neighbors
+        Eb   : average energy per bit
+        N0   : noise PSD
+        """
+        Nmin = self.avg_nearest_neighbor()
+        Qarg = np.sqrt(self.energy_efficiency / 2 * EbN0 )
+        return Nmin * Qfunction(Qarg)
+  
     def __getitem__(self, bit_pattern: int) -> complex:
         """Return constellation point for bit sequence index."""
         return complex(self.mod_table[bit_pattern])
@@ -156,10 +215,12 @@ standard_constellation = SimpleNamespace(
     BPSK=Constellation(BPSK_MAP,normalize=True),
     QPSK=Constellation(QPSK_MAP,normalize=True),
     PSK8=Constellation(PSK8_MAP,normalize=True),
-    QAM16=Constellation(QAM16_MAP,normalize=True)
+    QAM16=Constellation(QAM16_MAP,normalize=True),
+    APSK16=Constellation(APSK16_MAP, normalize=True)
 )
 # Allow legacy access
 BPSK=Constellation(BPSK_MAP,normalize=False)
 QPSK=Constellation(QPSK_MAP,normalize=False)
 PSK8=Constellation(PSK8_MAP,normalize=False)
 QAM16=Constellation(QAM16_MAP,normalize=False)
+APSK16 = Constellation(APSK16_MAP, normalize=False)
