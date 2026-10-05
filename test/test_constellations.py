@@ -312,23 +312,18 @@ class TestNearestNeighbor:
     Test nearest neighbor approx function
     """
 
-    @staticmethod
-    def Q_ref(x):
-        from scipy.special import erfc
-        return 0.5 * erfc(x / np.sqrt(2))
-
     def test_avg_nearest_neighbor(self, constellation, expected_Nmin):
         """
         Known N should match Nmin
         """
         assert constellation.avg_nearest_neighbor() == pytest.approx(expected_Nmin)
 
-    @pytest.mark.parametrize("N0", [0.1, 1.0, 5.0])
-    def test_approx(self, constellation, expected_Nmin, N0):
+    @pytest.mark.parametrize("EbN0", [0.1, 1.0, 5.0])
+    def test_approx(self, constellation, expected_Nmin, EbN0):
         """
         
         """
-        expected = expected_Nmin * self.Q_ref(
-                                            np.sqrt(constellation.dmin**2 / (2 * N0))
+        expected = expected_Nmin * Qfunction(
+                                            np.sqrt(constellation.energy_efficiency * EbN0 / 2)
                                              )
-        assert constellation.nearest_neighbor_approx(N0) == pytest.approx(expected)
+        assert constellation.nearest_neighbor_approx(EbN0) == pytest.approx(expected)
