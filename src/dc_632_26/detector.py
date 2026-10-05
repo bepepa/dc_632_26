@@ -53,11 +53,12 @@ class ThresholdDetector:
         detected = np.any(test_statistic > self.threshold)
         # TODO need to do the rising edge detection thing
         if detected:
-            # TODO determine n_phase
+            n_phase = np.argmax(test_statistic[:, symbol_idx])
+            corr_val = corr[n_phase, symbol_idx]
         else:
             n_phase = None
             corr_val = None
 
         self.last_test_val = test_statistic
-        return detected, n_phase, corr
+        return detected, n_phase, corr_val
 
