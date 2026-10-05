@@ -1,3 +1,5 @@
+import numpy as np
+
 class ThresholdDetector:
     """_summary_
 
@@ -5,12 +7,15 @@ class ThresholdDetector:
     ----------
     threshold : float
         Pre-determined detection threshold (calculated from ROC curve analysis)
+    preamble_seq : np.ndarray
+        The preamble sequence (complex symbols)
     useNorm : bool
         If true, use normalized inner product as the test statistic.
         Otherwise, use correlation.
     """
-    def __init__(self, threshold: float, useNorm=True):
+    def __init__(self, threshold: float, preamble_seq: np.ndarray, useNorm=True):
         self.threshold = threshold
+        self.preamble_seq = preamble_seq
         self.useNorm = useNorm
         self.last_test_val = None
 
@@ -42,7 +47,7 @@ class ThresholdDetector:
             The correlation value at the detected sampling phase. None if no detection.
         """
         if self.useNorm:
-            test_statistic = np.abs(corr)**2 / mag_sq
+            test_statistic = np.abs(corr)**2 / mag_sq / np.linalg.norm(self.preamble_seq)**2
         else:
             test_statistic = np.abs(corr)**2
         detected = np.any(test_statistic > self.threshold)
