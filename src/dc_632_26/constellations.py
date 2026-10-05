@@ -23,6 +23,7 @@ standard_constellation.QAM16
 
 from types import SimpleNamespace
 import numpy as np
+from dc_632_26.utils import Qfunction
 
 # ============================================================================
 # Standard Grey Coded Constellation Tables
