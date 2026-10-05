@@ -297,3 +297,33 @@ class TestGrayCoding:
     def test_gray_coded(self, constellation):
         """Test constellation is gray-coded."""
         assert self.is_gray_coded(constellation)
+
+@pytest.mark.parametrize(
+    "constellation, expected_Nmin",
+    [
+        (standard_constellation.BPSK, 1),
+        (standard_constellation.QPSK, 2),
+        (standard_constellation.PSK8, 2),
+        (standard_constellation.QAM16, 3.0),
+    ],
+)
+class TestNearestNeighbor:
+    """
+    Test nearest neighbor approx function
+    """
+
+    def test_avg_nearest_neighbor(self, constellation, expected_Nmin):
+        """
+        Known N should match Nmin
+        """
+        assert constellation.avg_nearest_neighbor() == pytest.approx(expected_Nmin)
+
+    @pytest.mark.parametrize("EbN0", [0.1, 1.0, 5.0])
+    def test_approx(self, constellation, expected_Nmin, EbN0):
+        """
+        
+        """
+        expected = expected_Nmin * Qfunction(
+                                            np.sqrt(constellation.energy_efficiency * EbN0 / 2)
+                                             )
+        assert constellation.nearest_neighbor_approx(EbN0) == pytest.approx(expected)
