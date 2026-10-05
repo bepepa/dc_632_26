@@ -177,26 +177,18 @@ class Constellation:
         """
         return float(self._symbol_distance(self.mod_table[bit_pattern1], self.mod_table[bit_pattern2]))
 
-    @staticmethod
-    def Qfunction(x):
-        """
-        Q function
-        """
-        from scipy.special import erfc
-        return 0.5 * erfc(x / np.sqrt(2))
-
     def avg_nearest_neighbor(self)-> float:
         """
         Calculate average number of nearest neighbors using symbol_distance
         """
 
-        diff = self._symbol_distance(self.mod_table[:,np.newaxis],
+        diff = symbol_distance(self.mod_table[:,np.newaxis],
                                self.mod_table[np.newaxis, :])
         np.fill_diagonal(diff, np.inf)
         close = np.isclose(diff, self.dmin)
         return float(close.sum(axis=1).mean())
 
-    def nearest_neighbor_approx(self, N0: float) -> float:
+    def nearest_neighbor_approx(self, EbN0: float) -> float:
         """
         Compute the nearest neighbor approximation for Probability of Symbol error
         for any given constellation based on the formula
@@ -207,8 +199,8 @@ class Constellation:
         N0   : noise PSD
         """
         Nmin = self.avg_nearest_neighbor()
-        Qarg = np.sqrt(self.dmin**2 / (2 * N0))
-        return Nmin * self.Qfunction(Qarg)
+        Qarg = np.sqrt(self.energy_efficiency / 2 * EbN0 )
+        return Nmin * Qfunction(Qarg)
   
     def __getitem__(self, bit_pattern: int) -> complex:
         """Return constellation point for bit sequence index."""
