@@ -22,6 +22,7 @@ class ThresholdDetector:
     def __repr__(self):
         return f"ThresholdDetector(threshold={self.threshold})"
 
+
     def detect(self, corr, mag_sq, n):
         """_summary_
 
@@ -51,14 +52,16 @@ class ThresholdDetector:
         else:
             test_statistic = np.abs(corr)**2
         detected = np.any(test_statistic > self.threshold)
-        # TODO need to do the rising edge detection thing
         if detected:
-            n_phase = np.argmax(test_statistic[:, symbol_idx])
-            corr_val = corr[n_phase, symbol_idx]
+            m_inds = np.where(np.abs(test_statistic) > self.threshold)
+            p_ind = np.argmax(np.abs(test_statistic[m_inds[0], m_inds[1]]))
+            k_ind = m_inds[1][p_ind]
         else:
-            n_phase = None
-            corr_val = None
+            p_ind = 0
+            k_ind = 0
+            n_phase = np.nan
+            corr_val = np.nan
 
         self.last_test_val = test_statistic
-        return detected, n_phase, corr_val
+        return detected, k_ind, corr[p_ind, k_ind]
 
