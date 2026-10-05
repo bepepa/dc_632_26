@@ -44,10 +44,12 @@ class ThresholdDetector:
         -------
         detected : bool
             True if the signal has been detected
-        n_phase : int
-            The detected sampling phase. None if no detection.
+        p_ind : int
+            Phase index of the detection
+        k_ind : int
+            Symbol index of the detection
         corr_val : complex
-            The correlation value at the detected sampling phase. None if no detection.
+            The correlation value at the detection. None if no detection.
         """
         if self.useNorm:
             test_statistic = np.abs(corr)**2 / mag_sq / np.linalg.norm(self.preamble_seq)**2
@@ -70,9 +72,11 @@ class ThresholdDetector:
             m_inds = np.where(test_statistic > self.threshold)
             p_ind = np.argmax(test_statistic[m_inds[0], m_inds[1]])
             k_ind = m_inds[1][p_ind]
+            corr_val = corr[p_ind, k_ind]
         else:
             p_ind = None
             k_ind = None
-
-        return detected, k_ind, corr[p_ind, k_ind]
+            corr_val = None
+        
+        return detected, p_ind, k_ind, corr_val
 
