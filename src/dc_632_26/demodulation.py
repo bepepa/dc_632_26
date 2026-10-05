@@ -27,7 +27,7 @@ Example
 import numpy as np
 import numpy.typing as npt
 from abc import ABC, abstractmethod
-from utils import int_to_bits
+from dc_632_26.utils import int_to_bits
 
 from dc_632_26.constellations import Constellation
 
