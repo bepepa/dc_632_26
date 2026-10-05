@@ -63,5 +63,5 @@ class ThresholdDetector:
             corr_val = np.nan
 
         self.last_test_val = test_statistic
-        return detected, k_ind, corr[p_ind, k_ind]
+        return detected, p_ind, k_ind, corr[p_ind, k_ind]
 
