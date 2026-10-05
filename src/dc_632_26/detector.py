@@ -17,7 +17,9 @@ class ThresholdDetector:
         self.threshold = threshold
         self.preamble_seq = preamble_seq
         self.useNorm = useNorm
-        self.last_test_val = None
+
+        self.threshold_breached = False
+        self.last_breached_val = None
 
     def __repr__(self):
         return f"ThresholdDetector(threshold={self.threshold})"
@@ -51,17 +53,26 @@ class ThresholdDetector:
             test_statistic = np.abs(corr)**2 / mag_sq / np.linalg.norm(self.preamble_seq)**2
         else:
             test_statistic = np.abs(corr)**2
-        detected = np.any(test_statistic > self.threshold)
+        
+        if np.any(test_statistic > self.threshold):
+            max_val = np.max(test_statistic)
+            # Only consider it a detection if we are now on the falling edge
+            if self.threshold_breached and (max_val < self.last_breached_val):
+                detected = True
+            else:
+                detected = False
+            self.threshold_breached = True
+            self.last_breached_val = max_val
+        else:
+            self.threshold_breached = False
+
         if detected:
-            m_inds = np.where(np.abs(test_statistic) > self.threshold)
-            p_ind = np.argmax(np.abs(test_statistic[m_inds[0], m_inds[1]]))
+            m_inds = np.where(test_statistic > self.threshold)
+            p_ind = np.argmax(test_statistic[m_inds[0], m_inds[1]])
             k_ind = m_inds[1][p_ind]
         else:
-            p_ind = 0
-            k_ind = 0
-            n_phase = np.nan
-            corr_val = np.nan
+            p_ind = None
+            k_ind = None
 
-        self.last_test_val = test_statistic
         return detected, k_ind, corr[p_ind, k_ind]
 
