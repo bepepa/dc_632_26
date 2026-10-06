@@ -51,6 +51,19 @@ class ThresholdDetector:
         corr_val : complex
             The correlation value at the detection. None if no detection.
         """
+
+         # ========================================================
+        # TODO: TEMPORARY DUMMY OVERRIDE FOR TESTING OTHER MODULES
+        # ========================================================
+        detected = True
+        p_ind = 1
+        k_ind = 43
+        corr_val = 0.95 + 0*1j
+        
+        print(f"DEBUG OVERRIDE: detected={detected}, p_ind={p_ind}, k_ind={k_ind}, corr_val={corr_val}")
+        return detected, p_ind, k_ind, corr_val
+        # ========================================================
+
         if self.useNorm:
             test_statistic = np.abs(corr)**2 / mag_sq / np.linalg.norm(self.preamble_seq)**2
         else:
@@ -69,14 +82,16 @@ class ThresholdDetector:
             self.threshold_breached = False
 
         if detected:
-            m_inds = np.where(test_statistic > self.threshold)
-            p_ind = np.argmax(test_statistic[m_inds[0], m_inds[1]])
-            k_ind = m_inds[1][p_ind]
-            corr_val = corr[p_ind, k_ind]
+           m_inds = np.where(test_statistic > self.threshold)
+           p_ind = np.argmax(test_statistic[m_inds[0], m_inds[1]])
+           k_ind = m_inds[1][p_ind]
+           corr_val = corr[p_ind, k_ind]
         else:
             p_ind = None
             k_ind = None
             corr_val = None
+
+        print(f"detected,p_ind,k_ind,corr_val,{detected},{p_ind},{k_ind},{corr_val}")
         
         return detected, p_ind, k_ind, corr_val
 
