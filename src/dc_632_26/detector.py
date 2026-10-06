@@ -13,20 +13,20 @@ class ThresholdDetector:
         If true, use normalized inner product as the test statistic.
         Otherwise, use correlation.
     """
-    def __init__(self, threshold: float, preamble_seq: np.ndarray, useNorm=True):
+    def __init__(self, threshold: float, preamble_seq: np.ndarray, useNorm=False):
         self.threshold = threshold
         self.preamble_seq = preamble_seq
         self.useNorm = useNorm
 
         self.threshold_breached = False
-        self.last_breached_val = None
+        self.last_breached_val = 0.0
 
     def __repr__(self):
         return f"ThresholdDetector(threshold={self.threshold})"
 
 
     def detect(self, corr, mag_sq, n):
-        """_summary_
+        """_summary_qq
 
         _extended_summary_
 
@@ -55,20 +55,23 @@ class ThresholdDetector:
          # ========================================================
         # TODO: TEMPORARY DUMMY OVERRIDE FOR TESTING OTHER MODULES
         # ========================================================
-        detected = True
-        p_ind = 1
-        k_ind = 43
-        corr_val = 0.95 + 0*1j
+        # detected = True
+        # p_ind = 1
+        # k_ind = 43
+        # corr_val = 0.95 + 0*1j
         
-        print(f"DEBUG OVERRIDE: detected={detected}, p_ind={p_ind}, k_ind={k_ind}, corr_val={corr_val}")
-        return detected, p_ind, k_ind, corr_val
+        # print(f"DEBUG OVERRIDE: detected={detected}, p_ind={p_ind}, k_ind={k_ind}, corr_val={corr_val}")
+        # return detected, p_ind, k_ind, corr_val
         # ========================================================
 
         if self.useNorm:
             test_statistic = np.abs(corr)**2 / mag_sq / np.linalg.norm(self.preamble_seq)**2
         else:
             test_statistic = np.abs(corr)**2
-        
+
+        print(f"test_statistic,{test_statistic}")
+
+        detected=False
         if np.any(test_statistic > self.threshold):
             max_val = np.max(test_statistic)
             # Only consider it a detection if we are now on the falling edge
@@ -80,6 +83,7 @@ class ThresholdDetector:
             self.last_breached_val = max_val
         else:
             self.threshold_breached = False
+            detected=False
 
         if detected:
            m_inds = np.where(test_statistic > self.threshold)
