@@ -1,7 +1,7 @@
 import numpy as np
 
 class ThresholdDetector:
-    """_summary_
+    """
 
     Attributes
     ----------
@@ -13,7 +13,8 @@ class ThresholdDetector:
         If true, use normalized inner product as the test statistic.
         Otherwise, use correlation.
     """
-    #def __init__(self, threshold: float, preamble_seq: np.ndarray, useNorm=False):
+    #def __init__(self, threshold: float, preamble_seq: np.ndarray, useNorm=False): original version
+    #The updated version here is due to keeping track of results during peak selection logic
     def __init__(self, num_phases: int, num_symbols: int, threshold: float, preamble_seq: np.ndarray, useNorm=False):
         #Receiver parameters
         self.num_phases = num_phases
@@ -23,12 +24,12 @@ class ThresholdDetector:
         self.preamble_seq = preamble_seq
         self.useNorm = useNorm
 
-        #Tracking flags for handling the peak-climbing state machine
+        #Tracking flags for handling the peak-climbing
         self.threshold_breached = False  #Starts False because we haven't crossed the threshold yet
         self.last_breached_val = -1.0   # Set to a dummy low value so any real stat will beat it
         self.samples_since_breach = 0      # Counts up only after we cross the threshold
 
-        #Initialize and will be used for saving the absolute best peak metrics we find
+        #Initialize and will be used for saving the best peak metrics we find
         self.best_p = None                 # Will store the phase index of the peak apex
         self.best_k = None                 # Will store the symbol index of the peak apex
         self.best_corr = None              # Will store the complex correlation value at the apex
@@ -38,11 +39,12 @@ class ThresholdDetector:
 
 
     def detect(self, corr, mag_sq, sample_count):
-        """_summary
+        """
 
         Processes samples one by one. Tracks the rising edge. Looks for a falling edge to find the location 
         of the best peak.  If the signal is noisy or plateaus and it doesn't find a falling edge for a specified limit, it returns
-        the location of the best peak so far. Uses either test statistic based on corr (self.usenorm=0) 
+        the location of the best peak so far.(Added during testing due to looking for peak for too long and missing it.) 
+        Uses either test statistic based on corr (self.usenorm=0) 
         or on normalized inner product (self.usenorm=1) 
 
         Parameters
@@ -78,12 +80,14 @@ class ThresholdDetector:
         k = sample_count // self.num_phases  # Symbol index (column)
         p = sample_count % self.num_phases   # Phase index (row)
 
-        #print(f"sample_count={sample_count} | test_statistic={test_statistic:.4f}")
+        #print(
+            #f"[DEBUG] Internal Results from Beginning of detect(), Before Per-Sample Peak Selection Logic:"
+            #print(f"sample_count={sample_count} | test_statistic={test_statistic:.4f}")
 
 
         detected=False
-
-        # Test statistic is above threshold
+        #DEBUG Note
+        #Work through logic for first breach, after first breach, looking too long, and steep cliff 
         if (test_statistic > self.threshold):
             if not self.threshold_breached:
                 # First time crossing threshold. Initialize tracking variables
@@ -114,14 +118,12 @@ class ThresholdDetector:
                 elif test_statistic < (self.last_breached_val * 0.9):
                     detected = True
                     self.threshold_breached = False
-
-        #ELSE: 
         else:
-            # If we were actively tracking a peak and suddenly drop off a steep cliff
+            # If we were actively tracking a peak and suddenly drop off a steep cliff 
             if self.threshold_breached:
                 detected = True
             
-            # Reset the gatekeeper flag because we are back in a quiet search mode
+            # Reset flag because we are back in search mode
             self.threshold_breached = False
 
             
@@ -129,12 +131,16 @@ class ThresholdDetector:
             p_ind=int(self.best_p)
             k_ind=int(self.best_k)
             corr_val=complex(self.best_corr)
-            #print(f"Peak locked at sample {sample_count - self.samples_since_breach}")
+            #print(
+            # f"[DEBUG] Internal detect() Results from Inside Per-Sample Peak Selection Logic:"
+            # f"  Peak at sample {sample_count - self.samples_since_breach}")
         else:
             p_ind = None
             k_ind = None
             corr_val = None
 
+        #print(
+        #f"[DEBUG] Internal Results from End of detect(), After Per-Sample Peak Selection Logic:"
         #print(f"detected,p_ind,k_ind,corr_val,{detected},{p_ind},{k_ind},{corr_val}")
         
         return detected, p_ind, k_ind, corr_val
