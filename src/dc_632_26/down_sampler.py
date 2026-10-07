@@ -26,21 +26,6 @@ class Downsampler:
     def __init__(self, pulse: Pulse, sampling_phase: int):
         self.oversamp = int(pulse.oversamp)
 
-        if self.oversamp < 1:
-            raise ValueError("pulse.oversamp must be a positive integer")
-
-        if int(sampling_phase) != sampling_phase or sampling_phase < 0:
-            raise ValueError(
-                "sampling_phase must be a non-negative integer"
-            )
-
-        if sampling_phase >= self.oversamp:
-            raise ValueError(
-                "sampling_phase must be less than pulse.oversamp"
-            )
-
-        self.sampling_phase = int(sampling_phase)
-
     def downsample(self, x: np.ndarray) -> np.ndarray:
         return np.asarray(x)[self.sampling_phase::self.oversamp]
 
