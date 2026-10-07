@@ -78,7 +78,7 @@ class ThresholdDetector:
         k = sample_count // self.num_phases  # Symbol index (column)
         p = sample_count % self.num_phases   # Phase index (row)
 
-        print(f"sample_count={sample_count} | test_statistic={test_statistic:.4f}")
+        #print(f"sample_count={sample_count} | test_statistic={test_statistic:.4f}")
 
 
         detected=False
@@ -129,13 +129,13 @@ class ThresholdDetector:
             p_ind=int(self.best_p)
             k_ind=int(self.best_k)
             corr_val=complex(self.best_corr)
-            print(f"Peak locked at sample {sample_count - self.samples_since_breach}")
+            #print(f"Peak locked at sample {sample_count - self.samples_since_breach}")
         else:
             p_ind = None
             k_ind = None
             corr_val = None
 
-        print(f"detected,p_ind,k_ind,corr_val,{detected},{p_ind},{k_ind},{corr_val}")
+        #print(f"detected,p_ind,k_ind,corr_val,{detected},{p_ind},{k_ind},{corr_val}")
         
         return detected, p_ind, k_ind, corr_val
 
