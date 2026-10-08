@@ -15,7 +15,7 @@ class ThresholdDetector:
     """
     #def __init__(self, threshold: float, preamble_seq: np.ndarray, useNorm=False): original version
     #The updated version here is due to keeping track of results during peak selection logic
-    def __init__(self, num_phases: int, num_symbols: int, threshold: float, preamble_seq: np.ndarray, useNorm=False):
+    def __init__(self, num_phases: int, num_symbols: int, threshold: float, preamble_seq: np.ndarray, useNorm=False,debug: bool = False):
         #Receiver parameters
         self.num_phases = num_phases
         self.num_symbols = num_symbols
@@ -23,6 +23,7 @@ class ThresholdDetector:
         self.threshold = threshold
         self.preamble_seq = preamble_seq
         self.useNorm = useNorm
+        self.debug=debug
 
         #Tracking flags for handling the peak-climbing
         self.threshold_breached = False  #Starts False because we haven't crossed the threshold yet
@@ -73,8 +74,17 @@ class ThresholdDetector:
 
         if self.useNorm and self.preamble_seq is not None:
             test_statistic = np.abs(corr)**2 / mag_sq / np.linalg.norm(self.preamble_seq)**2
+            tmp_norm=np.linalg.norm(self.preamble_seq)**2
+            if self.debug is True:
+                print(
+                f"[DEBUG] Internal detect() useNorm True:"
+                f"corr,{corr},mag_sq,{mag_sq},tmp_norm,{tmp_norm}"
+                f" sample_count, test_statistic,{sample_count}, {test_statistic}")
         else:
             test_statistic = np.abs(corr)**2
+
+
+        
 
         #Derive spatial grid coordinates solely from the sample count
         k = sample_count // self.num_phases  # Symbol index (column)
@@ -90,9 +100,10 @@ class ThresholdDetector:
         if (test_statistic > self.threshold):    
             if not self.threshold_breached:
                 # First time crossing threshold. Initialize tracking variables
-                print(f"[DEBUG] Internal Results detect():")
-                #print(f"sample_count={sample_count} | test_statistic={test_statistic:.4f}")
-                print(f"First time Crossing Threshold at sample_count,{sample_count},test_stat,{test_statistic}")
+                if self.debug is True:
+                    print(f"[DEBUG] Internal Results detect():")
+                    #print(f"sample_count={sample_count} | test_statistic={test_statistic:.4f}")
+                    print(f"First time Crossing Threshold at sample_count,{sample_count},test_stat,{test_statistic}")
                 self.threshold_breached = True
                 self.last_breached_val = test_statistic
                 self.best_p = p
@@ -100,12 +111,14 @@ class ThresholdDetector:
                 self.best_corr = corr
                 self.samples_since_breach = 0
             else:
-                print(f"Incrementing Samples since breach at sample_count,{sample_count},test_stat,{test_statistic}")
+                if self.debug is True:
+                    print(f"Incrementing Samples since breach at sample_count,{sample_count},test_stat,{test_statistic}")
                 self.samples_since_breach += 1 # increment last since breach
 
                 # Check if we found a strictly better/higher peak point
                 if test_statistic > self.last_breached_val:
-                    print(f"Better peak sample_count,{sample_count},test_stat,{test_statistic}")
+                    if self.debug is True:
+                        print(f"Better peak sample_count,{sample_count},test_stat,{test_statistic}")
                     self.last_breached_val = test_statistic
                     self.best_p = p
                     self.best_k = k
@@ -114,19 +127,22 @@ class ThresholdDetector:
 
                 # NOISE TIMEOUT: If it stays high for 2 full symbols past peak, force detection
                 elif self.samples_since_breach >= (self.num_phases):
-                    print("Noise safety timeout triggered. Locking in best peak found.")
+                    if self.debug is True:
+                        print("Noise safety timeout triggered. Locking in best peak found.")
                     detected = True
                     self.threshold_breached = False
 
                 # CLEAN FALLING EDGE: A 10% drop might mean we passed it
                 elif test_statistic < (self.last_breached_val * 0.9):
-                    print("Falling edge test. Locking in best peak found.")
+                    if self.debug is True:
+                        print("Falling edge test. Locking in best peak found.")
                     detected = True
                     self.threshold_breached = False
         else:
             # If we were actively tracking a peak and suddenly drop off a steep cliff 
             if self.threshold_breached:
-                print(f"Outer else loop at sample_count,{sample_count}")
+                if self.debug is True:
+                    print(f"Outer else loop at sample_count,{sample_count}")
                 detected = True
             
             # Reset flag because we are back in search mode
