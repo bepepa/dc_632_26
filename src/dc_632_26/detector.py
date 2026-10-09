@@ -15,7 +15,7 @@ class ThresholdDetector:
     """
     #def __init__(self, threshold: float, preamble_seq: np.ndarray, useNorm=False): original version
     #The updated version here is due to keeping track of results during peak selection logic
-    def __init__(self, num_phases: int, num_symbols: int, threshold: float, preamble_seq: np.ndarray, useNorm=False,debug: bool = False):
+    def __init__(self, num_phases: int, num_symbols: int, threshold: float, preamble_seq: np.ndarray, useNorm=False,debug: bool = True):
         #Receiver parameters
         self.num_phases = num_phases
         self.num_symbols = num_symbols
@@ -73,13 +73,14 @@ class ThresholdDetector:
         """
 
         if self.useNorm and self.preamble_seq is not None:
-            test_statistic = np.abs(corr)**2 / mag_sq / np.linalg.norm(self.preamble_seq)**2
-            tmp_norm=np.linalg.norm(self.preamble_seq)**2
-            if self.debug is True:
-                print(
-                f"[DEBUG] Internal detect() useNorm True:"
-                f"corr,{corr},mag_sq,{mag_sq},tmp_norm,{tmp_norm}"
-                f" sample_count, test_statistic,{sample_count}, {test_statistic}")
+            # test_statistic = np.abs(corr)**2 / mag_sq / np.linalg.norm(self.preamble_seq)**2
+            # tmp_norm=np.linalg.norm(self.preamble_seq)**2
+            # if self.debug is True:
+            #     print(
+            #     f"[DEBUG] Internal detect() useNorm True:"
+            #     f"corr,{corr},mag_sq,{mag_sq},tmp_norm,{tmp_norm}"
+            #     f" sample_count, test_statistic,{sample_count}, {test_statistic}")
+            test_statistic = np.abs(corr)
         else:
             test_statistic = np.abs(corr)**2
 
