@@ -91,9 +91,6 @@ class ThresholdDetector:
         k = sample_count // self.num_phases  # Symbol index (column)
         p = sample_count % self.num_phases   # Phase index (row)
 
-        # print(f"[DEBUG] Internal Results detect(), Before Per-Sample Peak Selection Logic:"
-        #     f"sample_count={sample_count} | test_statistic={test_statistic:.4f}")
-
 
         detected=False
         #DEBUG Note
@@ -102,7 +99,8 @@ class ThresholdDetector:
             if not self.threshold_breached:
                 # First time crossing threshold. Initialize tracking variables
                 if self.debug is True:
-                    print(f"[DEBUG] Internal Results detect():")
+                    print(f"DEBUG ThresholdDetector Class  \n"
+                        f"Internal Results detect():")
                     #print(f"sample_count={sample_count} | test_statistic={test_statistic:.4f}")
                     print(f"First time Crossing Threshold at sample_count,{sample_count},test_stat,{test_statistic}")
                 self.threshold_breached = True
@@ -163,9 +161,7 @@ class ThresholdDetector:
             k_ind = None
             corr_val = None
 
-        #print(
-        #f"[DEBUG] Internal Results from End of detect(), After Per-Sample Peak Selection Logic:"
-        #print(f"detected,p_ind,k_ind,corr_val,{detected},{p_ind},{k_ind},{corr_val}")
+        
         
         return detected, p_ind, k_ind, corr_val
 
