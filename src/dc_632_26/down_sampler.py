@@ -1,4 +1,4 @@
- import numpy as np 
+import numpy as np 
 from dc_632_26.pulses import Pulse
 
 
