@@ -16,7 +16,6 @@ class Receiver():
                  preamble_seq: np.ndarray,
                  fsT: int, 
                  slicer: GenericSlicer, # generic slicer configured with constellation
-                 df: float=0.0001008,
                  detection_threshold: float= 0.3,
                  detection_useNorm: bool=True,
                  debug: bool = True
@@ -28,7 +27,6 @@ class Receiver():
         self.debug=debug
         self.detection_threshold=detection_threshold
         self.detection_useNorm=detection_useNorm
-        self.df=df
         self.preamble_seq = preamble_seq
 
         # use a dictionary to store and return the results of processing
@@ -148,20 +146,12 @@ class Receiver():
         if self.debug is True:
             print(f"[DEBUG] self.start_symbol,{self.start_symbol},self.fsT,{self.fsT},self.sampling_offset,{self.sampling_offset}")
             print(f"[DEBUG] start_idx,{start_idx},demod_samples len,{len(demod_samples)}")
-
-        # apply frequency and phase correction to the demodulated samples
-        true_df = self.df * self.fsT
-        freq_err = abs(self.frequency_offset_per_symbol - true_df) / abs(true_df) * 100
-        if self.debug is True:
-            print(f"self.frequency_offset_per_symbol ,{self.frequency_offset_per_symbol}")
-            print(f"True frequency offset: {self.df * self.fsT} cycles/symbol")  # df is cycles/sample at the fsT=32 rate
-            print(f"Frequency offset relative error: {freq_err:.2f}%")
-            
+            print(f"self.frequency_offset_per_symbol ,{self.frequency_offset_per_symbol}")       
             print(f"n_syms,{n_syms}")
-            print(f"vec len",{len(np.exp(-1j * (self.frequency_offset_per_symbol * np.arange(n_syms))))})
             print(f"self.phasor",{self.phasor})
 
-
+        # apply frequency and phase correction to the demodulated samples
+      
         demod_samples_corrected = (demod_samples * 
                                               np.exp(-1j * (2*np.pi*self.frequency_offset_per_symbol * (len(self.preamble_seq)+np.arange(n_syms)))))
                 
@@ -169,19 +159,14 @@ class Receiver():
         #                                 np.exp(-1j * (2*np.pi*.1/31) * np.arange(n_syms))) #test true df
         
         demod_samples_corrected = demod_samples_corrected * (1/self.phasor)
-
-        
             ## Slicer
             # map the corrected demodulated samples to the nearest constellation points
             # assuming BPSK for simplicity; modify as needed for other modulation schemes
-        # bits = self.slicer(demod_samples_corrected)
         
         rx_bits = self.slicer.slice_symbols(demod_samples_corrected)
         self.results['bits'] = rx_bits
         self.results['demod_samples_corrected']=demod_samples_corrected
 
-    
-    
         return self.results
         
 
