@@ -2,19 +2,20 @@ import numpy as np
 
 class ThresholdDetector:
     """
-
+    Runs threshold detection on the outputs of the PolyPhaseCorrelator. 
     Attributes
     ----------
+    num_phases: int
+        Number of sampling phases used by PolyPhaseCorrelator
+    num_symbols: int
+        Number of symbols in the buffer (corersponding to length of the known preamble to detect)
     threshold : float
         Pre-determined detection threshold (calculated from ROC curve analysis)
     preamble_seq : np.ndarray
-        The preamble sequence (complex symbols)
+        The preamble sequence to detect (complex symbols)
     useNorm : bool
-        If true, use normalized inner product as the test statistic.
-        Otherwise, use correlation.
+        If true, use normalized inner product as the test statistic. Otherwise, use correlation power.
     """
-    #def __init__(self, threshold: float, preamble_seq: np.ndarray, useNorm=False): original version
-    #The updated version here is due to keeping track of results during peak selection logic
     def __init__(self, num_phases: int, num_symbols: int, threshold: float, preamble_seq: np.ndarray, useNorm=False,debug: bool = True):
         #Receiver parameters
         self.num_phases = num_phases
@@ -38,13 +39,11 @@ class ThresholdDetector:
     def __repr__(self):
         return f"ThresholdDetector(threshold={self.threshold})"
 
-
     def detect(self, corr, mag_sq, sample_count):
         """
-
         Processes samples one by one. Tracks the rising edge. Looks for a falling edge to find the location 
         of the best peak.  If the signal is noisy or plateaus and it doesn't find a falling edge for a specified limit, it returns
-        the location of the best peak so far.(Added during testing due to looking for peak for too long and missing it.) 
+        the location of the best peak so far. (Added during testing due to looking for peak for too long and missing it.) 
         Uses either test statistic based on corr (self.usenorm=0) 
         or on normalized inner product (self.usenorm=1) 
 
@@ -71,26 +70,15 @@ class ThresholdDetector:
         corr_val : complex
             The correlation value at the detection. None if no detection.
         """
-
-        if self.useNorm and self.preamble_seq is not None:
-            # test_statistic = np.abs(corr)**2 / mag_sq / np.linalg.norm(self.preamble_seq)**2
-            # tmp_norm=np.linalg.norm(self.preamble_seq)**2
-            # if self.debug is True:
-            #     print(
-            #     f"[DEBUG] Internal detect() useNorm True:"
-            #     f"corr,{corr},mag_sq,{mag_sq},tmp_norm,{tmp_norm}"
-            #     f" sample_count, test_statistic,{sample_count}, {test_statistic}")
-            test_statistic = np.abs(corr)
+        # Calculate the test statistic
+        if self.useNorm:
+            test_statistic = np.abs(corr)**2 / mag_sq / np.linalg.norm(self.preamble_seq)**2
         else:
             test_statistic = np.abs(corr)**2
-
-
-        
 
         #Derive spatial grid coordinates solely from the sample count
         k = sample_count // self.num_phases  # Symbol index (column)
         p = sample_count % self.num_phases   # Phase index (row)
-
 
         detected=False
         #DEBUG Note
@@ -146,16 +134,12 @@ class ThresholdDetector:
             
             # Reset flag because we are back in search mode
             self.threshold_breached = False
-            #print("Reset threshold breached at sample_count,{sample_count}")
 
             
         if detected:
             p_ind=int(self.best_p)
             k_ind=int(self.best_k)
             corr_val=complex(self.best_corr)
-            #print(
-            # f"[DEBUG] Internal detect() Results from Inside Per-Sample Peak Selection Logic:"
-            # f"  Peak at sample {sample_count - self.samples_since_breach}")
         else:
             p_ind = None
             k_ind = None

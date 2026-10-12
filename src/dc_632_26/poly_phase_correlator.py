@@ -80,31 +80,6 @@ class PolyPhaseCorrelator:
         # return the correlation resulting from new MF output
         return self.correlate(), self.sq_magnitude_mf_out()
 
-    def update2(self, matched_filter_output):
-        """Update the inner state of the correlator with a new matched filter output sample.
-
-        Parameters:
-        -----------
-        matched_filter_output : complex
-            The new sample from the matched filter output.
-
-        Returns:
-        --------
-        tuple
-            A tuple containing the correlation value and the norm-squared of the matched filter outputs for the current phase.
-        """
-        # Advance the phase and symbol counters
-        self.n_phase = (self.n_phase + 1) % self.num_phases
-        if self.n_phase == 0:
-            self.n_symbol = (self.n_symbol + 1)
-
-        # ring buffer for each phase; new sample overwrites the oldest one in a circular manner
-        self._buffer[self.n_phase, 
-                     self.n_symbol % len(self.preamble_symbols)] = matched_filter_output
-        
-        # return the correlation resulting from new MF output
-        return self.normalize(), self.sq_magnitude_mf_out()
-
     def correlate(self):
         """Compute the correlation for the current buffer state.
         
@@ -121,25 +96,6 @@ class PolyPhaseCorrelator:
         return np.sum(np.roll(self._buffer[self.n_phase, :], -n_oldest) * 
                       np.conj(self.preamble_symbols))
 
-    def normalize(self):
-        """Compute the correlation for the current buffer state.
-        
-        Returns:
-        --------
-        complex
-            The correlation value after insertion of the newest matched filter output sample.
-        """
-
-        # the buffer contents is rotated; the position of the oldest sample in the buffer
-        # is equal to (self.n_symbol + 1) % len(self.preamble_symbols). That position needs
-        # to be circularly shifted to the front.
-        n_oldest = (self.n_symbol + 1) % len(self.preamble_symbols)
-        z = np.roll(self._buffer[self.n_phase, :], -n_oldest)
-        num = np.abs(np.sum(z*np.conj(self.preamble_symbols)))**2
-        norm = num / np.sum(np.abs(z)**2) / np.sum(np.abs(self.preamble_symbols)**2)
-        return norm
-        
-
     def sq_magnitude_mf_out(self):
         """compute the norm-squared of the matched filter outputs for the current phase.
         
@@ -149,8 +105,6 @@ class PolyPhaseCorrelator:
             The norm-squared of the matched filter outputs for the current phase.
         """
         return np.sum(np.abs(self._buffer[self.n_phase, :])**2)
-
-
 
     def buffer(self, n_phase:int):
         """Retrieve the contents of the buffer for the specified phase, with the oldest sample rotated to the front so that the buffer appears in chronological order.

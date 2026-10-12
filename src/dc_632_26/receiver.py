@@ -76,10 +76,7 @@ class Receiver():
             sample = mf_out[sample_count]
             
             # Update the unmodifiable correlator class state
-            if self.detector.useNorm is True:
-                corr, mag_sq = self.correlator.update2(sample)
-            else:
-                corr, mag_sq = self.correlator.update(sample)
+            corr, mag_sq = self.correlator.update(sample)
             
             # Derive current p and k grid , note this will step through corr by row and then cols
             k = sample_count // num_phases
@@ -89,6 +86,10 @@ class Receiver():
             if k < num_symbols:
                 corrs[p, k] = corr
                 mags[p, k] = mag_sq
+            
+            # Don't start detection until the buffer is full. This prevents issues caused by the zeros in the initial buffer.
+            if k < len(self.preamble_seq):
+                continue
             
             # Check for detection threshold crossing and use the peak climbing
             detected, p_ind, k_ind, corr_val = self.detector.detect(corr, mag_sq, sample_count)
