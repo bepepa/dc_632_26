@@ -1,4 +1,4 @@
- import numpy as np 
+import numpy as np 
 from dc_632_26.pulses import Pulse
 
 
@@ -24,7 +24,13 @@ class Downsampler:
     """
 
     def __init__(self, pulse: Pulse, sampling_phase: int):
-        self.oversamp = int(pulse.oversamp)
+        oversamp = int(pulse.oversamp)
+        if oversamp < 1:
+            raise ValueError("oversamp must be at least 1")
+        if not 0 <= sampling_phase < oversamp:
+            raise ValueError("sampling_phase must satisfy 0 <= phase < oversamp")
+        self.oversamp = oversamp
+        self.sampling_phase = int(sampling_phase)
 
     def downsample(self, x: np.ndarray) -> np.ndarray:
         return np.asarray(x)[self.sampling_phase::self.oversamp]
