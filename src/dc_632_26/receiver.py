@@ -132,7 +132,7 @@ class Receiver():
         (self.frequency_offset_per_symbol,self.phasor, noise_variance) = self.estimator.estimate(self.results['received_preamble_buffer'])
         
         self.results['phasor'] = self.phasor
-        self.results['frequency_offset_per_symbol'] = self.frequency_offset_per_symbol
+        self.results['frequency_offset_cyc_per_symbol'] = self.frequency_offset_per_symbol
 
         # transition to the next state (demodulation) after successful synchronization
         self.state = DEMOD
