@@ -55,6 +55,56 @@ def byte_to_bits(b: int) -> np.ndarray:
     return bits
 
 
+def bits_to_byte(bits):
+    """convert a sequence of up to eight bits to a byte (MSB in first position)
+
+    Inputs:
+    -------
+    bits: an iterable of eight 0's and 1's
+
+    Returns:
+    --------
+    (uint8) a single byte
+
+    """
+    assert len(bits) <= 8, "Can only convert at most 8 bits at a time"
+
+    res = np.uint8(0)
+
+    for b in bits:
+        res = res << 1
+        res = res | b
+
+    return res
+
+
+def bits_to_bytes(bit_seq):
+    """Convert a sequence of bits into a byte sequence (MSB first)
+
+    Input:
+    ------
+    * bit_seq: a sequence of binary values
+
+    Returns:
+    --------
+    a vector of bytes (uint8), length is 1/8 of input length
+
+    Exception:
+    ----------
+    A `ValueError` is raised if length of bit sequence is not divisible by 8.
+    """
+    Nb = len(bit_seq)
+    if (Nb % 8) != 0:
+        raise ValueError("number of bits must be a multiple of 8")
+
+    byte_seq = np.zeros(Nb // 8, dtype=np.uint8)
+
+    for n in range(Nb // 8):
+        byte_seq[n] = bits_to_byte(bit_seq[8 * n : 8 * (n + 1)])
+
+    return byte_seq
+
+
 ##
 # Functional Design
 ##
@@ -110,6 +160,33 @@ def string_source(string: str) -> np.ndarray:
         bits[8 * n : 8 * (n + 1)] = byte_to_bits(bb[n])
 
     return bits
+
+
+def string_sink(bits):
+    """convert a sequence of bits into a string
+
+    Inputs:
+    -------
+    * bits - an iterable containing 0's and 1'; length must be a multiple of 8
+
+    Returns:
+    --------
+    (string) the result of decoding sequence of bits
+    """
+
+    # check that number of bits is a multiple of 8
+    if len(bits) % 8 != 0:
+        raise ValueError(f"number of bits {len(bits)} is not divisible by 8.")
+
+    # allocate storage
+    n_bytes = len(bits) // 8
+    bytes = np.zeros(n_bytes, dtype=np.uint8)
+
+    for n in range(n_bytes):
+        bytes[n] = bits_to_byte(bits[n * 8 : (n + 1) * 8])
+
+    # decode the string (deal with unicode encoding)
+    return bytes.tobytes().decode("utf-8", "replace")
 
 
 ##
