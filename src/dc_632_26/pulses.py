@@ -17,7 +17,7 @@ class Pulse(ABC):
         Number of FFT points to use when calculating frequency response. Default is 1024.
     """
 
-    def __init__(self, num_samples: int, oversamp: int = None, nfft: int = 1024):
+    def __init__(self, num_samples: int, oversamp: int | None = None, nfft: int = 1024):
         self.num_samples = num_samples
         if oversamp is None:
             self.oversamp = num_samples
@@ -48,7 +48,7 @@ class Pulse(ABC):
         energy = np.sum(samples**2)
         return samples / np.sqrt(energy)
 
-    def _sampling_frequency(self, T: float = 1.0) -> int:
+    def _sampling_frequency(self, T: float = 1.0) -> float:
         return self.oversamp / T
 
     def _freq_axis(self, T: float = 1.0) -> np.ndarray:
