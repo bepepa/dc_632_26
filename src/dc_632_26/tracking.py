@@ -274,9 +274,10 @@ class PLL(TrackingLoop):
         Update the tracking loop with the corrected and reference samples.
     """
 
-    def __init__(
-        self, filter: LoopFilter = Second_Order_Filter(alpha1=0.1, alpha2=0.0025)
-    ):
+    def __init__(self, filter: LoopFilter | None = None):
+        if filter is None:
+            filter = Second_Order_Filter(alpha1=0.1, alpha2=0.0025)
+
         self.filter = filter
         self.integrator = Integrator()
 
@@ -357,7 +358,9 @@ class ALL(TrackingLoop):
 
     """
 
-    def __init__(self, filter: LoopFilter = First_Order_Filter(alpha=0.1)):
+    def __init__(self, filter: LoopFilter | None = None):
+        if filter is None:
+            filter = First_Order_Filter(alpha=0.1)
         self.filter = filter
         self.integrator = Integrator()
 
